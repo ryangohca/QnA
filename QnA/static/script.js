@@ -11,7 +11,7 @@ var objects = {};
 //    },...
 //}
 var drawing = false;
-var editMode = 1; // 1 - insert, 2 - delete
+var editMode = 1; // 0 - delete, 1 - insert
 
 function drawRect(id, x1, y1, x2, y2){
     var c = document.getElementById(id);
