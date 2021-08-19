@@ -3,6 +3,7 @@ let currFocusedCanvas;
 var objects = {};
 // expanded form
 // objects = {
+//    'filename': file the pages come from
 //    '<canvasID>':{
 //        'annotations': [<rect1>, <rect2>]
 //        'baseImage': the actual image of a page, use this to draw on canvas
@@ -107,7 +108,7 @@ function setBaseImage(src, canvas) {
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         objects[canvas.id]['baseImage'] = img;
-        objects[canvas.id]['baseImageName'] = img.src;
+        objects[canvas.id]['baseImageName'] = src;
         canvas.width = img.width;
         canvas.height = img.height;
     }
@@ -131,6 +132,7 @@ function submitAnnotationsData(){
 }
 
 window.onload = function(){
+    objects['filename'] = 'sample.docx';
     for (var canvas of document.getElementsByClassName("drawRectCanvas")){
         objects[canvas.id] = {};
         objects[canvas.id]['annotations'] = [];
