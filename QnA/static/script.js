@@ -40,8 +40,8 @@ function getMousePos(evt, canvas) {
 function update(canvas){
     var ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(baseImage[canvas.id], 0, 0);
-    for (var prevRects of objects[canvas.id]){
+    ctx.drawImage(objects[canvas.id]['baseImage'], 0, 0);
+    for (var prevRects of objects[canvas.id]['annotations']){
         drawRect(canvas.id, prevRects.startX, prevRects.startY, prevRects.endX, prevRects.endY);
     }
 }
@@ -55,10 +55,10 @@ function handle_click(evt, canvas) {
         targetPos = getMousePos(evt, canvas);
         let counter = 0;
 
-        for (var rect of objects[currFocusedCanvas.id]) {
+        for (var rect of objects[currFocusedCanvas.id]['annotations']) {
             if (targetPos.x >= rect.startX && targetPos.x <= rect.endX) {
                 if (targetPos.y >= rect.startY && targetPos.y <= rect.endY) {
-                    objects[currFocusedCanvas.id].splice(counter, 1);
+                    objects[currFocusedCanvas.id]['annotations'].splice(counter, 1);
                     update(currFocusedCanvas);
                     break;
                 }
@@ -86,7 +86,7 @@ function handle_release(evt, canvas) {
                            "endY" : Math.min(Math.max(startPos.y, endPos.y), canvas.height)
                           }
         if (Math.min(Math.abs(coordinates.endX - coordinates.startX), Math.abs(coordinates.endY - coordinates.startY)) > 10) {
-            objects[canvas.id].unshift(coordinates); // add new rects to front
+            objects[canvas.id]['annotations'].unshift(coordinates); // add new rects to front
         }
         update(canvas);
         drawing = false;
@@ -99,7 +99,8 @@ function setBaseImage(src, canvas) {
     img.onload = function() {
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
-        baseImage[canvas.id] = img;
+        objects[canvas.id]['baseImage'] = img;
+        objects[canvas.id]['baseImageName'] = img.src;
         canvas.width = img.width;
         canvas.height = img.height;
     }
@@ -114,16 +115,35 @@ function switch_mode(evt) {
     console.log(editMode);
 }
 
+function submitAnnotationsData(){
+    return fetch("/", {
+        method: "POST",
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},    
+        body: JSON.stringify(objects)
+    });
+}
+
 window.onload = function(){
     for (var canvas of document.getElementsByClassName("drawRectCanvas")){
-        objects[canvas.id] = [];
+        objects[canvas.id] = {};
+        objects[canvas.id]['annotations'] = [];
         setBaseImage('static/sample.png', canvas);
         canvas.addEventListener("mousedown", function(e){handle_click(e, canvas)});
         canvas.addEventListener("mousemove", function(e){handle_move(e, canvas)});
         canvas.addEventListener("mouseup", function(e){handle_release(e, canvas)});
     }
-    window.addEventListener("keydown", function(e){switch_mode(e)});
+
+    document.getElementById('submitAnnotations').addEventListener("click", function(e){
+        submitAnnotationsData().then(function(response) {
+            console.log(response.status);
+            return response.text();
+        }).then(function(text) {
+            console.log(text);
+        });
+    });
 }
+
+window.addEventListener("keydown", function(e){switch_mode(e)});
 
 window.addEventListener('mousemove', function(e){
     if (drawing){
@@ -147,12 +167,3 @@ window.addEventListener('mouseup', function(e){
 https://towardsdatascience.com/talking-to-python-from-javascript-flask-and-the-fetch-api-e0ef3573c451
 https://developers.google.com/web/updates/2015/03/introduction-to-fetch
 */
-
-fetch("/", {
-    method: "POST"
-}).then(function(response) {
-    console.log(response.status);
-    return response.text();
-}).then(function(text) {
-    console.log(text);
-});
