@@ -1,0 +1,12 @@
+{% extends "template.html" %}
+
+{% block otherScripts %}
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<canvas id="picture" class="drawRectCanvas" width="1000" height="1000">
+</canvas>
+<button id="submitAnnotations" type="button"> Submit! </button>
+{% endblock %}
+

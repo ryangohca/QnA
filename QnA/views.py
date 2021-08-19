@@ -11,8 +11,8 @@ def cropImage(rootImage, coords):
     original = Image.open(rootImage)
     return original.crop((coords['startX'], coords['startY'], coords['endX'], coords['endY']))
 
-@app.route("/", methods = ["POST", "GET"])
-def root():
+@app.route("/edit", methods = ["POST", "GET"])
+def editor():
     if (request.method == "POST"):
         scriptDir = os.path.dirname(__file__)
         data = json.loads(list(request.form)[0])
@@ -31,8 +31,12 @@ def root():
             img.save(imageDir)
 
         return str(croppedImages), 200
-    return render_template("main.html")
+    return render_template("editor.html")
 
+@app.route("/")
+def root():
+    return render_template("main.html")
+    
 # @app.route("/edit")
 # def editor():
 #     return render_template("editor.html")
