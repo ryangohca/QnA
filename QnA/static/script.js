@@ -1,7 +1,14 @@
 let startPos;
 let currFocusedCanvas;
 var objects = {};
-var baseImage = {};
+// expanded form
+// objects = {
+//    '<canvasID>':{
+//        'annotations': [<rect1>, <rect2>]
+//        'baseImage': the actual image of a page, use this to draw on canvas
+//        'baseImageName': link to image, will be used on python's side
+//    },...
+//}
 var drawing = false;
 var editMode = 1; // 1 - insert, 2 - delete
 
