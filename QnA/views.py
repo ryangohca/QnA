@@ -11,6 +11,9 @@ def cropImage(rootImage, coords):
     original = Image.open(rootImage)
     return original.crop((coords['startX'], coords['startY'], coords['endX'], coords['endY']))
 
+def generateRandomName(length=100):
+    return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz1234567890') for i in range(length))
+
 @app.route("/edit", methods = ["POST", "GET"])
 def editor():
     if (request.method == "POST"):
@@ -26,12 +29,21 @@ def editor():
 
         #Save images
         for img in croppedImages:
-            randomName = ''.join(random.choice('abcdefghijklmnopqrstuvwxyz1234567890') for i in range(100)) + '.png'
-            imageDir = os.path.join(scriptDir, 'storage/' + randomName)
+            randomName = generateRandomName() + '.png'
+            imageDir = os.path.join(scriptDir, app.config['PHOTO_STORAGE'], randomName)
             img.save(imageDir)
 
         return str(croppedImages), 200
     return render_template("editor.html")
+
+@app.route("/uploadFiles", methods=["GET", "POST"])
+def uploadFiles():
+    files = request.files.getlist(('filepicker'))
+    for file in files:
+        filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], generateRandomName() + '.' + file.filename.split('.')[1])
+        print(os.path.dirname(__file__))
+        file.save(filePath)
+    return redirect(url_for("editor"))
 
 @app.route("/")
 def root():
