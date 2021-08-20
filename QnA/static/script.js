@@ -124,7 +124,7 @@ function switch_mode(evt) {
 }
 
 function submitAnnotationsData(){
-    return fetch("/", {
+    return fetch("/edit", {
         method: "POST",
         headers: {'Content-Type':'application/x-www-form-urlencoded'},    
         body: JSON.stringify(objects)
