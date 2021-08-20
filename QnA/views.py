@@ -4,6 +4,8 @@ import random
 
 from flask import render_template, request, flash, url_for, redirect
 from PIL import Image
+import fitz #pymupdf legacy name is fitz
+from docx2pdf import convert
 
 from QnA import app
 
@@ -14,6 +16,12 @@ def cropImage(rootImage, coords):
 def generateRandomName(length=100):
     return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz1234567890') for i in range(length))
 
+def extractPdfPages(pdfPath):
+    doc = fitz.open(pdfPath)
+    for page in doc:
+        pix = page.get_pixmap()
+        pix.save(os.path.join(os.path.dirname(__file__), app.config['PAGES'], generateRandomName() + '.png'))
+        
 @app.route("/edit", methods = ["POST", "GET"])
 def editor():
     if (request.method == "POST"):
@@ -30,7 +38,7 @@ def editor():
         #Save images
         for img in croppedImages:
             randomName = generateRandomName() + '.png'
-            imageDir = os.path.join(scriptDir, app.config['PHOTO_STORAGE'], randomName)
+            imageDir = os.path.join(scriptDir, app.config['EXTRACTED'], randomName)
             img.save(imageDir)
 
         return str(croppedImages), 200
@@ -40,9 +48,15 @@ def editor():
 def uploadFiles():
     files = request.files.getlist(('filepicker'))
     for file in files:
-        filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], generateRandomName() + '.' + file.filename.split('.')[1])
+        ext = file.filename.split('.')[1]
+        filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], generateRandomName() + '.' + ext)
         print(os.path.dirname(__file__))
         file.save(filePath)
+        if ext == 'doc' or ext == 'docx':
+            convert(filePath)
+            filePath.replace('.' + ext, '.pdf')
+        extractPdfPages(filePath)
+            
     return redirect(url_for("editor"))
 
 @app.route("/")
