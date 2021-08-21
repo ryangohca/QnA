@@ -1,5 +1,6 @@
 let startPos;
 let currFocusedCanvas;
+var baseObjects = [];
 var objects = {};
 // expanded form
 // objects = {
@@ -12,6 +13,7 @@ var objects = {};
 //}
 var drawing = false;
 var editMode = 1; // 0 - delete, 1 - insert
+var imagesLoaded = 0;
 
 function drawRect(id, x1, y1, x2, y2){
     var c = document.getElementById(id);
@@ -103,15 +105,24 @@ function handle_release(evt, canvas) {
 
 function setBaseImage(src, canvas) {
     var img = new Image();
-    img.src = src;
     img.onload = function() {
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
         objects[canvas.id]['baseImage'] = img;
         objects[canvas.id]['baseImageName'] = src;
         canvas.width = img.width;
         canvas.height = img.height;
+        imagesLoaded++;
+        var allLoaded = function() {
+            if (imagesLoaded == document.getElementsByClassName.length) {
+                for (var base of baseObjects) {
+                    var ctx = base.canvas.getContext("2d");
+                    ctx.drawImage(base.img, 0, 0);
+                }
+            }
+        };
+        allLoaded();
     }
+    img.src = src; 
+    baseObjects.push({"img" : img, "canvas" : canvas});
 }
 
 function switch_mode(evt) {
@@ -120,7 +131,6 @@ function switch_mode(evt) {
     } else if (evt.key == 'i') {
         editMode = 1;
     }
-    console.log(editMode);
 }
 
 function submitAnnotationsData(){
@@ -136,10 +146,10 @@ window.onload = function(){
     for (var canvas of document.getElementsByClassName("drawRectCanvas")){
         objects[canvas.id] = {};
         objects[canvas.id]['annotations'] = [];
-        setBaseImage('static/sample.png', canvas);
         canvas.addEventListener("mousedown", function(e){handle_click(e, canvas)});
         canvas.addEventListener("mousemove", function(e){handle_move(e, canvas)});
         canvas.addEventListener("mouseup", function(e){handle_release(e, canvas)});
+        setBaseImage("static/sample.png", canvas);
     }
 
     document.getElementById('submitAnnotations').addEventListener("click", function(e){
