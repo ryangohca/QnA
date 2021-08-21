@@ -1,12 +1,14 @@
 {% extends "template.html" %}
 
 {% block otherScripts %}
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='editor.css') }}">
+<script src="{{ url_for('static', filename='editor.js') }}"></script>
 {% endblock %}
 
 {% block body %}
 <canvas id="picture" class="drawRectCanvas" width="1000" height="1000">
 </canvas>
 <button id="submitAnnotations" type="button"> Submit! </button>
+<div id='debug'> </div>
 {% endblock %}
 

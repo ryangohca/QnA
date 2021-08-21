@@ -41,9 +41,20 @@ function drawRect(id, x1, y1, x2, y2){
 
 function getMousePos(evt, canvas) {
     var rect = canvas.getBoundingClientRect();
+    var x, y;
+    if (evt.touches){
+        x = evt.touches[0].clientX;
+        y = evt.touches[0].clientY;
+    } else if (evt.changedTouches){
+        x = evt.changedTouches[0].clientX;
+        y = evt.changedTouches[0].clientY;
+    } else {
+        x = evt.clientX;
+        y = evt.clientY;
+    }
     return {
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top
+      'x': x - rect.left,
+      'y': y - rect.top
     };
 }
 
@@ -149,6 +160,9 @@ window.onload = function(){
         canvas.addEventListener("mousedown", function(e){handle_click(e, canvas)});
         canvas.addEventListener("mousemove", function(e){handle_move(e, canvas)});
         canvas.addEventListener("mouseup", function(e){handle_release(e, canvas)});
+        canvas.addEventListener("touchstart", function(e){handle_click(e, canvas)});
+        canvas.addEventListener("touchmove", function(e){handle_move(e, canvas);});
+        canvas.addEventListener("touchend", function(e){handle_release(e, canvas)});
         setBaseImage("static/sample.png", canvas);
     }
 
@@ -162,15 +176,30 @@ window.onload = function(){
     });
 }
 
-window.addEventListener("keydown", function(e){switch_mode(e)});
+document.addEventListener("keydown", function(e){switch_mode(e)});
 
-window.addEventListener('mousemove', function(e){
+document.addEventListener('mousemove', function(e){
     if (drawing){
         handle_move(e, currFocusedCanvas);
     }
 });
 
-window.addEventListener('mouseup', function(e){
+document.addEventListener('mouseup', function(e){
+    if (drawing){
+        handle_release(e, currFocusedCanvas);
+    }
+});
+document.addEventListener('touchstart', function(e){
+});
+
+document.addEventListener('touchend', function(e){
+    //e.preventDefault();
+    if (drawing){
+        handle_move(e, currFocusedCanvas);
+    }
+});
+
+document.addEventListener('touchend', function(e){
     if (drawing){
         handle_release(e, currFocusedCanvas);
     }

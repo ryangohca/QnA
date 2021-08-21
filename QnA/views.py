@@ -49,12 +49,13 @@ def uploadFiles():
     files = request.files.getlist(('filepicker'))
     for file in files:
         ext = file.filename.split('.')[1]
-        filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], generateRandomName() + '.' + ext)
+        filePath = os.path.join(os.path.dirname(__file__), app.config ['UPLOAD'], generateRandomName() + '.' + ext)
         print(os.path.dirname(__file__))
         file.save(filePath)
         if ext == 'doc' or ext == 'docx':
-            convert(filePath)
-            filePath.replace('.' + ext, '.pdf')
+           newPath = filePath.replace('.' + ext, ".pdf")
+           convert(filePath, newPath)
+           filePath = newPath   
         extractPdfPages(filePath)
             
     return redirect(url_for("editor"))

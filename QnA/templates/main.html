@@ -3,7 +3,7 @@
 {% block body %}
 <form method="POST" action="/uploadFiles"  enctype="multipart/form-data">
     <label for="filepicker">Choose file(s) to upload:</label>
-    <input type="file" name="filepicker" id="filepicker" accept=".pdf" multiple>
+    <input type="file" name="filepicker" id="filepicker" accept=".pdf,.doc,.docx" multiple>
     <button type="submit"> Submit! </button>
 </form>
 {% endblock %}
