@@ -28,7 +28,6 @@ def extractPdfPages(pdfPath, documentID):
         db.session.add(page)
         db.session.commit()
         
-        
 @app.route("/edit", methods = ["POST", "GET"])
 def editor():
     if (request.method == "POST"):
