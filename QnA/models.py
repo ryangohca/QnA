@@ -60,3 +60,10 @@ class Answers(db.Model):
     questionPart = db.Column(db.String(5), nullable=True)
     
 db.create_all()
+
+def insert_dummy_user():
+    dummy = Users(username='admin')
+    dummy.set_password('admin')
+    db.session.add(dummy)
+    db.session.commit()
+    
