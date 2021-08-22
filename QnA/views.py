@@ -7,7 +7,7 @@ from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
 
-from QnA import app
+from QnA import app, db
 from QnA.models import DocumentUploads, Pages, ExtractedImages
 
 
@@ -18,11 +18,13 @@ def cropImage(rootImage, coords):
 def generateRandomName(length=100):
     return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz1234567890') for i in range(length))
 
-def extractPdfPages(pdfPath):
+def extractPdfPages(pdfPath, documentID):
     doc = fitz.open(pdfPath)
-    for page in doc:
+    for pageNo, page in enumerate(doc, start=1):
         pix = page.get_pixmap()
-        pix.save(os.path.join(os.path.dirname(__file__), app.config['PAGES'], generateRandomName() + '.png'))
+        name = generateRandomName() + '.png'
+        pix.save(os.path.join(os.path.dirname(__file__), app.config['PAGES'], name))
+        page = Pages(documentID=documentID, pageNo=pageNo, databaseName=name)
         
 @app.route("/edit", methods = ["POST", "GET"])
 def editor():
@@ -48,16 +50,20 @@ def editor():
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
 def uploadFiles():
-    files = request.files.getlist(('filepicker'))
+    files = request.files.getlist('filepicker')
     for file in files:
-        ext = file.filename.split('.')[1]
-        filePath = os.path.join(os.path.dirname(__file__), app.config ['UPLOAD'], generateRandomName() + '.' + ext)
+        originalName, ext = file.filename.split('.')
+        newName = generateRandomName()
+        filePath = os.path.join(os.path.dirname(__file__), app.config ['UPLOAD'], newName + '.' + ext)
         file.save(filePath)
         if ext == 'doc' or ext == 'docx':
            newPath = filePath.replace('.' + ext, ".pdf")
            convert(filePath, newPath)
-           filePath = newPath   
-        extractPdfPages(filePath)
+           filePath = newPath
+        document = DocumentUploads(userID=1, originalName=originalName + '.' + ext, databaseName=newName + '.pdf')
+        db.session.add(document)
+        db.session.commit()
+        extractPdfPages(filePath, documentID=document.id)
             
     return redirect(url_for("editor"))
 

@@ -58,12 +58,14 @@ class Answers(db.Model):
     answerText = db.Column(db.String(256), nullable=True)
     questionNo = db.Column(db.Integer, nullable=True)
     questionPart = db.Column(db.String(5), nullable=True)
-    
-db.create_all()
 
 def insert_dummy_user():
     dummy = Users(username='admin')
     dummy.set_password('admin')
     db.session.add(dummy)
     db.session.commit()
+    
+#db.drop_all()
+db.create_all()
+#insert_dummy_user()
     
