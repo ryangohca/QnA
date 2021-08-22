@@ -25,6 +25,8 @@ def extractPdfPages(pdfPath, documentID):
         name = generateRandomName() + '.png'
         pix.save(os.path.join(os.path.dirname(__file__), app.config['PAGES'], name))
         page = Pages(documentID=documentID, pageNo=pageNo, databaseName=name)
+        db.session.add(page)
+        db.session.commit()
         
 @app.route("/edit", methods = ["POST", "GET"])
 def editor():
