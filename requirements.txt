@@ -1,0 +1,7 @@
+Flask
+Flask-SQLAlchemy
+Flask-Bootstrap
+Pillow
+PyMuPDF
+docx2pdf
+
