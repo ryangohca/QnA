@@ -7,7 +7,8 @@ from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
 
-from QnA import app
+from QnA import app, models
+
 
 def cropImage(rootImage, coords):
     original = Image.open(rootImage)

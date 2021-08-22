@@ -1,4 +1,0 @@
-flask
-pymupdf
-PIL
-docx2pdf
