@@ -51,7 +51,6 @@ def uploadFiles():
     for file in files:
         ext = file.filename.split('.')[1]
         filePath = os.path.join(os.path.dirname(__file__), app.config ['UPLOAD'], generateRandomName() + '.' + ext)
-        print(os.path.dirname(__file__))
         file.save(filePath)
         if ext == 'doc' or ext == 'docx':
            newPath = filePath.replace('.' + ext, ".pdf")
