@@ -20,13 +20,16 @@ def generateRandomName(length=100):
 
 def extractPdfPages(pdfPath, documentID):
     doc = fitz.open(pdfPath)
+    pagesFilenames = []
     for pageNo, page in enumerate(doc, start=1):
         pix = page.get_pixmap()
         name = generateRandomName() + '.png'
+        pagesFilenames.append(name)
         pix.save(os.path.join(os.path.dirname(__file__), app.config['PAGES'], name))
         page = Pages(documentID=documentID, pageNo=pageNo, databaseName=name)
         db.session.add(page)
         db.session.commit()
+    return pagesFilenames
         
 @app.route("/edit", methods = ["POST", "GET"])
 def editor():
@@ -48,11 +51,13 @@ def editor():
             img.save(imageDir)
 
         return str(croppedImages), 200
-    return render_template("editor.html")
+    pages = request.args.get('pages')
+    return render_template("editor.html", pages=pages)
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
 def uploadFiles():
     files = request.files.getlist('filepicker')
+    pages = []
     for file in files:
         originalName, ext = file.filename.split('.')
         newName = generateRandomName()
@@ -65,9 +70,9 @@ def uploadFiles():
         document = DocumentUploads(userID=1, originalName=originalName + '.' + ext, databaseName=newName + '.pdf')
         db.session.add(document)
         db.session.commit()
-        extractPdfPages(filePath, documentID=document.id)
+        pages.append([document.id, extractPdfPages(filePath, documentID=document.id)])
             
-    return redirect(url_for("editor"))
+    return redirect(url_for("editor", pages=pages))
 
 @app.route("/")
 def root():
