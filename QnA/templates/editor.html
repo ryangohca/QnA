@@ -14,6 +14,7 @@
         {% set baseImageDir = "pages/" + pages[j][1].databaseName %}
         <canvas id="{{canvasID}}" class="drawRectCanvas" width="1000" height="1000">
         </canvas>
+        <p>Page {{pages[j][1].pageNo}} of {{documentName}}</p>
         <script> prepareCanvas('{{canvasID}}', '{{baseImageDir}}'); </script>
     {% endfor %}
 {% endfor %}
