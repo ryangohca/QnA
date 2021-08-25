@@ -11,7 +11,7 @@
     {% set documentName = documents[i][0] %}
     {% for j in range(pages | length) %}
         {% set canvasID = "page-" + pages[j][0]|string %}
-        {% set baseImageDir = "static/" + pages[j][1].databaseName %}
+        {% set baseImageDir = "pages/" + pages[j][1].databaseName %}
         <canvas id="{{canvasID}}" class="drawRectCanvas" width="1000" height="1000">
         </canvas>
         <script> prepareCanvas('{{canvasID}}', '{{baseImageDir}}'); </script>
