@@ -4,8 +4,8 @@ var baseObjects = [];
 var objects = {};
 // expanded form
 // objects = {
-//    'filename': file the pages come from
 //    '<canvasID>':{
+//        'pageID': unique idenifier to the image in canvas, will be used on server side
 //        'annotations': [<rect1>, <rect2>]
 //        'baseImage': the actual image of a page, use this to draw on canvas
 //        'baseImageName': link to image, will be used on python's side
@@ -123,7 +123,7 @@ function setBaseImage(src, canvas) {
         canvas.height = img.height;
         imagesLoaded++;
         var allLoaded = function() {
-            if (imagesLoaded == document.getElementsByClassName.length) {
+            if (imagesLoaded == document.getElementsByClassName('drawRectCanvas').length) {
                 for (var base of baseObjects) {
                     var ctx = base.canvas.getContext("2d");
                     ctx.drawImage(base.img, 0, 0);
@@ -152,20 +152,20 @@ function submitAnnotationsData(){
     });
 }
 
-window.onload = function(){
-    objects['filename'] = 'sample.docx';
-    for (var canvas of document.getElementsByClassName("drawRectCanvas")){
-        objects[canvas.id] = {};
-        objects[canvas.id]['annotations'] = [];
-        canvas.addEventListener("mousedown", function(e){handle_click(e, canvas)});
-        canvas.addEventListener("mousemove", function(e){handle_move(e, canvas)});
-        canvas.addEventListener("mouseup", function(e){handle_release(e, canvas)});
-        canvas.addEventListener("touchstart", function(e){handle_click(e, canvas)});
-        canvas.addEventListener("touchmove", function(e){handle_move(e, canvas);});
-        canvas.addEventListener("touchend", function(e){handle_release(e, canvas)});
-        setBaseImage("static/sample.png", canvas);
-    }
+function prepareCanvas(canvasID, baseImage){
+    canvas = document.getElementByID(canvasID);
+    objects[canvasID] = {};
+    objects[canvasID]['annotations'] = [];
+    canvas.addEventListener("mousedown", function(e){handle_click(e, canvas)});
+    canvas.addEventListener("mousemove", function(e){handle_move(e, canvas)});
+    canvas.addEventListener("mouseup", function(e){handle_release(e, canvas)});
+    canvas.addEventListener("touchstart", function(e){handle_click(e, canvas)});
+    canvas.addEventListener("touchmove", function(e){handle_move(e, canvas);});
+    canvas.addEventListener("touchend", function(e){handle_release(e, canvas)});
+    setBaseImage("baseImage", canvas);
+}
 
+window.onload = function(){
     document.getElementById('submitAnnotations').addEventListener("click", function(e){
         submitAnnotationsData().then(function(response) {
             console.log(response.status);
