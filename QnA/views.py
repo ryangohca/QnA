@@ -20,16 +20,17 @@ def generateRandomName(length=100):
 
 def extractPdfPages(pdfPath, documentID):
     doc = fitz.open(pdfPath)
-    pagesFilenames = []
+    pages = []
     for pageNo, page in enumerate(doc, start=1):
         pix = page.get_pixmap()
         name = generateRandomName() + '.png'
-        pagesFilenames.append(name)
         pix.save(os.path.join(os.path.dirname(__file__), app.config['PAGES'], name))
         page = Pages(documentID=documentID, pageNo=pageNo, databaseName=name)
+        pages.append((page.id, page))
         db.session.add(page)
         db.session.commit()
-    return pagesFilenames
+    # Returns a list of tuples (pageID, pageData)
+    return pages
         
 @app.route("/edit", methods = ["POST", "GET"])
 def editor():
@@ -38,8 +39,6 @@ def editor():
         data = json.loads(list(request.form)[0])
         croppedImages = []
         for pageID in data:
-            if pageID == "filename":
-                continue
             imageDir = os.path.join(scriptDir, data[pageID]['baseImageName'])
             for rects in data[pageID]['annotations']:
                 croppedImages.append(cropImage(imageDir, rects))
@@ -51,13 +50,13 @@ def editor():
             img.save(imageDir)
 
         return str(croppedImages), 200
-    pages = request.args.get('pages')
-    return render_template("editor.html", pages=pages)
+    documents = request.args.get('documents')
+    return render_template("editor.html", documents=documents)
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
 def uploadFiles():
     files = request.files.getlist('filepicker')
-    pages = []
+    documents = []
     for file in files:
         originalName, ext = file.filename.split('.')
         newName = generateRandomName()
@@ -67,12 +66,12 @@ def uploadFiles():
            newPath = filePath.replace('.' + ext, ".pdf")
            convert(filePath, newPath)
            filePath = newPath
-        document = DocumentUploads(userID=1, originalName=originalName + '.' + ext, databaseName=newName + '.pdf')
+        document = DocumentUploads(userID=1, originalName=file.filename, databaseName=newName + '.pdf')
         db.session.add(document)
         db.session.commit()
-        pages.append([document.id, extractPdfPages(filePath, documentID=document.id)])
+        documents.append([document.originalName, extractPdfPages(filePath, documentID=document.id)])
             
-    return redirect(url_for("editor", pages=pages))
+    return redirect(url_for("editor", documents=documents))
 
 @app.route("/")
 def root():
