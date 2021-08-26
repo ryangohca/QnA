@@ -155,6 +155,7 @@ function submitAnnotationsData(){
 function prepareCanvas(canvasID, baseImage){
     var canvas = document.getElementById(canvasID);
     objects[canvasID] = {};
+    objects[canvasID]['pageID'] = parseInt(canvasID.split('-')[1]);
     objects[canvasID]['annotations'] = [];
     canvas.addEventListener("mousedown", function(e){handle_click(e, canvas)});
     canvas.addEventListener("mousemove", function(e){handle_move(e, canvas)});

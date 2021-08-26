@@ -39,18 +39,22 @@ def editor():
         data = json.loads(list(request.form)[0])
         croppedImages = []
         for pageID in data:
-            imageDir = os.path.join(scriptDir, data[pageID]['baseImageName'])
+            baseImageDir = os.path.join(scriptDir, data[pageID]['baseImageName'])
             for rects in data[pageID]['annotations']:
-                croppedImages.append(cropImage(imageDir, rects))
-
-        #Save images
-        for img in croppedImages:
-            randomName = generateRandomName() + '.png'
-            imageDir = os.path.join(scriptDir, app.config['EXTRACTED'], randomName)
-            img.save(imageDir)
-
+                img = cropImage(baseImageDir, rects)
+                croppedImages.append(img)
+                # Save images
+                randomName = generateRandomName() + '.png'
+                imageDir = os.path.join(scriptDir, app.config['EXTRACTED'], randomName)
+                img.save(imageDir)
+                extractedImage = ExtractedImages(pageID=data[pageID]['pageID'], databaseName=randomName,
+                                                topX=rects['startX'], topY=rects['startY'], botX=rects['endX'],
+                                                botY=rects['endY'])
+                db.session.add(extractedImage)
+                db.session.commit()
         return str(croppedImages), 200
     documents = request.args.get('documents')
+    
     return render_template("editor.html", documents=json.loads(documents))
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
