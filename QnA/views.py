@@ -48,8 +48,8 @@ def editor():
                 imageDir = os.path.join(scriptDir, app.config['EXTRACTED'], randomName)
                 img.save(imageDir)
                 extractedImage = ExtractedImages(pageID=data[pageID]['pageID'], databaseName=randomName,
-                                                topX=rects['startX'], topY=rects['startY'], botX=rects['endX'],
-                                                botY=rects['endY'])
+                                                topX=rects['startX'], topY=rects['startY'], 
+                                                bottomX=rects['endX'], bottomY=rects['endY'])
                 db.session.add(extractedImage)
                 db.session.commit()
         return str(croppedImages), 200
