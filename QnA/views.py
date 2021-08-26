@@ -26,10 +26,10 @@ def extractPdfPages(pdfPath, documentID):
         name = generateRandomName() + '.png'
         pix.save(os.path.join(os.path.dirname(__file__), app.config['PAGES'], name))
         page = Pages(documentID=documentID, pageNo=pageNo, databaseName=name)
-        pages.append((page.id, page))
         db.session.add(page)
         db.session.commit()
-    # Returns a list of tuples (pageID, pageData)
+        pages.append((page.id, pageNo, name))
+    # Returns a list of tuples (pageID, pageNo, databaseName)
     return pages
         
 @app.route("/edit", methods = ["POST", "GET"])
@@ -51,7 +51,7 @@ def editor():
 
         return str(croppedImages), 200
     documents = request.args.get('documents')
-    return render_template("editor.html", documents=documents)
+    return render_template("editor.html", documents=json.loads(documents))
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
 def uploadFiles():
@@ -71,7 +71,7 @@ def uploadFiles():
         db.session.commit()
         documents.append([document.originalName, extractPdfPages(filePath, documentID=document.id)])
             
-    return redirect(url_for("editor", documents=documents))
+    return redirect(url_for("editor", documents=json.dumps(documents)))
 
 @app.route("/")
 def root():

@@ -73,7 +73,7 @@ function handle_click(evt, canvas) {
         startPos = getMousePos(evt, canvas);
         drawing = true;
     } else {
-        targetPos = getMousePos(evt, canvas);
+        var targetPos = getMousePos(evt, canvas);
         let counter = 0;
 
         for (var rect of objects[currFocusedCanvas.id]['annotations']) {
@@ -153,7 +153,7 @@ function submitAnnotationsData(){
 }
 
 function prepareCanvas(canvasID, baseImage){
-    canvas = document.getElementByID(canvasID);
+    var canvas = document.getElementById(canvasID);
     objects[canvasID] = {};
     objects[canvasID]['annotations'] = [];
     canvas.addEventListener("mousedown", function(e){handle_click(e, canvas)});
@@ -162,9 +162,9 @@ function prepareCanvas(canvasID, baseImage){
     canvas.addEventListener("touchstart", function(e){handle_click(e, canvas)});
     canvas.addEventListener("touchmove", function(e){handle_move(e, canvas);});
     canvas.addEventListener("touchend", function(e){handle_release(e, canvas)});
-    setBaseImage("baseImage", canvas);
+    setBaseImage(baseImage, canvas);
 }
-
+/*
 window.onload = function(){
     document.getElementById('submitAnnotations').addEventListener("click", function(e){
         submitAnnotationsData().then(function(response) {
@@ -175,6 +175,7 @@ window.onload = function(){
         });
     });
 }
+*/
 
 document.addEventListener("keydown", function(e){switch_mode(e)});
 
