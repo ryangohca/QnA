@@ -17,12 +17,8 @@ window.onload = function(){
         {% set pages = documents[i][1] %}
         {% for j in range(pages | length) %}
             {% set canvasID = "page-" + pages[j][0]|string %}
-            {% set baseImageDir = "/pages/" + pages[j][2] %}
-            try{
-                prepareCanvas({{canvasID|tojson}}, {{baseImageDir|tojson}});
-            }catch(error){
-                document.getElementById('debug').innerHTML = error;
-            }
+            {% set baseImageDir = "static/pages/" + pages[j][2] %}
+            prepareCanvas({{canvasID|tojson}}, {{baseImageDir|tojson}});
         {% endfor %}
     {% endfor %}
 }
