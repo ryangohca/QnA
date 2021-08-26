@@ -3,9 +3,9 @@ from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['EXTRACTED'] = 'extracted'
-app.config['UPLOAD'] = 'upload'
-app.config['PAGES'] = 'pages'
+app.config['EXTRACTED'] = 'static/extracted'
+app.config['UPLOAD'] = 'static/upload'
+app.config['PAGES'] = 'static/pages'
 
 Bootstrap(app)
 
