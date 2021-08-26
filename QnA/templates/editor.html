@@ -3,6 +3,26 @@
 {% block otherScripts %}
 <link rel="stylesheet" href="{{ url_for('static', filename='editor.css') }}">
 <script src="{{ url_for('static', filename='editor.js') }}"></script>
+<script>
+window.onload = function(){
+    document.getElementById('submitAnnotations').addEventListener("click", function(e){
+        submitAnnotationsData().then(function(response) {
+            console.log(response.status);
+            return response.text();
+        }).then(function(text) {
+            console.log(text);
+        });
+    });
+    {% for i in range(documents|length) %}
+        {% set pages = documents[i][1] %}
+        {% for j in range(pages | length) %}
+            {% set canvasID = "page-" + pages[j][0]|string %}
+            {% set baseImageDir = "pages/" + pages[j][2] %}
+            prepareCanvas({{canvasID|tojson}}, {{baseImageDir|tojson}});
+        {% endfor %}
+    {% endfor %}
+}
+</script>
 {% endblock %}
 
 {% block body %}
@@ -11,11 +31,9 @@
     {% set documentName = documents[i][0] %}
     {% for j in range(pages | length) %}
         {% set canvasID = "page-" + pages[j][0]|string %}
-        {% set baseImageDir = "pages/" + pages[j][1].databaseName %}
-        <canvas id="{{canvasID}}" class="drawRectCanvas" width="1000" height="1000">
-        </canvas>
-        <p>Page {{pages[j][1].pageNo}} of {{documentName}}</p>
-        <script> prepareCanvas('{{canvasID}}', '{{baseImageDir}}'); </script>
+        {% set baseImageDir = "pages/" + pages[j][2] %}
+        <canvas id="{{canvasID}}" class="drawRectCanvas" width="10" height="10"></canvas>
+        <p>Page {{pages[j][1]}} of {{documentName}}</p>
     {% endfor %}
 {% endfor %}
 <button id="submitAnnotations" type="button"> Submit! </button>
