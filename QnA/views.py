@@ -1,6 +1,7 @@
 import json
 import os
 import random
+import string
 
 from flask import render_template, request, flash, url_for, redirect
 from PIL import Image
@@ -16,7 +17,7 @@ def cropImage(rootImage, coords):
     return original.crop((coords['startX'], coords['startY'], coords['endX'], coords['endY']))
 
 def generateRandomName(length=100):
-    return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz1234567890') for i in range(length))
+    return ''.join(random.choice(string.ascii_letters + string.digits) for i in range(length))
 
 def extractPdfPages(pdfPath, documentID):
     doc = fitz.open(pdfPath)
@@ -31,8 +32,16 @@ def extractPdfPages(pdfPath, documentID):
         pages.append((page.id, pageNo, name))
     # Returns a list of tuples (pageID, pageNo, databaseName)
     return pages
-        
-@app.route("/edit", methods = ["POST", "GET"])
+  
+@app.route("/tag", methods=["GET", "POST"])
+def tag():
+    images = request.args.get("croppedImages")
+    if images is None:
+        return "server error: 'croppedImages' not found", 500
+    images = json.loads(images)
+    return render_template("tag.html", images=images)
+    
+@app.route("/edit", methods=["POST", "GET"])
 def editor():
     if (request.method == "POST"):
         scriptDir = os.path.dirname(__file__)
@@ -42,7 +51,6 @@ def editor():
             baseImageDir = os.path.join(scriptDir, data[pageID]['baseImageName'])
             for rects in data[pageID]['annotations']:
                 img = cropImage(baseImageDir, rects)
-                croppedImages.append(img)
                 # Save images
                 randomName = generateRandomName() + '.png'
                 imageDir = os.path.join(scriptDir, app.config['EXTRACTED'], randomName)
@@ -52,9 +60,12 @@ def editor():
                                                 bottomX=rects['endX'], bottomY=rects['endY'])
                 db.session.add(extractedImage)
                 db.session.commit()
-        return str(croppedImages), 200
+                croppedImages.append((extractedImage.id, randomName))
+        return redirect(url_for('tag', croppedImages=json.dumps(croppedImages)))
+      
     documents = request.args.get('documents')
-    
+    if documents is None:
+        return "server error: 'documents' not found", 500
     return render_template("editor.html", documents=json.loads(documents))
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
@@ -64,7 +75,7 @@ def uploadFiles():
     for file in files:
         originalName, ext = file.filename.split('.')
         newName = generateRandomName()
-        filePath = os.path.join(os.path.dirname(__file__), app.config ['UPLOAD'], newName + '.' + ext)
+        filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], newName + '.' + ext)
         file.save(filePath)
         if ext == 'doc' or ext == 'docx':
            newPath = filePath.replace('.' + ext, ".pdf")
