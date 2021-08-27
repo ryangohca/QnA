@@ -3,7 +3,7 @@ import os
 import random
 import string
 
-from flask import render_template, request, flash, url_for, redirect
+from flask import render_template, request, flash, url_for, redirect, make_response, jsonify
 from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
@@ -11,6 +11,9 @@ from docx2pdf import convert
 from QnA import app, db
 from QnA.models import DocumentUploads, Pages, ExtractedImages
 
+curDoc = []
+pageAnnotationData = {}
+curPageNum = 1
 
 def cropImage(rootImage, coords):
     original = Image.open(rootImage)
@@ -62,14 +65,36 @@ def editor():
                 db.session.commit()
                 croppedImages.append((extractedImage.id, randomName))
         return redirect(url_for('tag', croppedImages=json.dumps(croppedImages)))
-      
+
     documents = request.args.get('documents')
     if documents is None:
         return "server error: 'documents' not found", 500
-    return render_template("editor.html", documents=json.loads(documents))
+    return render_template("editor.html", documents=json.loads(documents), pageNum = curPageNum)
+
+@app.route("/nextPage", methods=["POST"])
+def nextPage():
+    global curPageNum
+    data = json.loads(list(request.form)[0])
+    pageID = list(data.keys())[0]
+    annotations = data[pageID]["annotations"]
+    pageAnnotationData[pageID] = annotations
+    curPageNum += 1
+    return redirect(url_for("editor", documents = json.dumps(curDoc)))
+  
+@app.route("/prevPage", methods=["POST"])
+def prevPage():
+    global curPageNum
+    data = json.loads(list(request.form)[0])
+    pageID = list(data.keys())[0]
+    annotations = data[pageID]["annotations"]
+    pageAnnotationData[pageID] = annotations
+    curPageNum -= 1
+    return redirect(url_for("editor", documents = json.dumps(curDoc)))
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
 def uploadFiles():
+    global curDoc, curPageNum
+    
     files = request.files.getlist('filepicker')
     documents = []
     for file in files:
@@ -85,8 +110,11 @@ def uploadFiles():
         db.session.add(document)
         db.session.commit()
         documents.append([document.originalName, extractPdfPages(filePath, documentID=document.id)])
-            
-    return redirect(url_for("editor", documents=json.dumps(documents)))
+    
+    curDoc = documents;
+    curPageNum = 1
+    print(curDoc)
+    return redirect(url_for("editor", documents=json.dumps(curDoc)))
 
 @app.route("/")
 def root():

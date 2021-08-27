@@ -17,38 +17,52 @@ window.onload = function(){
             }
         });
     });
-    {% for i in range(documents|length) %}
-        {% set pages = documents[i][1] %}
-        {% for j in range(pages | length) %}
-            {% set canvasID = "page-" + pages[j][0]|string %}
-            {% set baseImageDir = "static/pages/" + pages[j][2] %}
-            prepareCanvas({{canvasID|tojson}}, {{baseImageDir|tojson}});
-        {% endfor %}
-    {% endfor %}
+    document.getElementById("nextPage").addEventListener("click", function(e) {
+        nextPage().then(function(response) {
+            window.location.href = window.location.href; // no idea why window.location.reload doenst work
+        });
+    })
+    document.getElementById("prevPage").addEventListener("click", function(e) {
+        prevPage().then(function(response) {
+            window.location.href = window.location.href; // no idea why window.location.reload doenst work
+        });
+    })
+    // {% for i in range(documents|length) %}
+    //     {% set pages = documents[i][1] %}
+    //     {% for j in range(pages | length) %}
+    //         {% set canvasID = "page-" + pages[j][0]|string %}
+    //         {% set baseImageDir = "static/pages/" + pages[j][2] %}
+    //         prepareCanvas({{canvasID|tojson}}, {{baseImageDir|tojson}});
+    //     {% endfor %}
+    // {% endfor %}
+    console.log("{{documents[0][0]}}");
+    console.log("{{documents[0][1]}}");
+    var pageNum = "{{pageNum}}";
+    var canvasID = "page-{{documents[0][1][pageNum - 1][0]}}";
+    var baseImageDir = "static/pages/{{documents[0][1][pageNum - 1][2]}}";
+    prepareCanvas(canvasID, baseImageDir);
 }
 </script>
 {% endblock %}
 
-<!-- {% block content %}
+{% block content %}
+
 {% for i in range(documents|length) %}
     {% set pages = documents[i][1] %}
     {% set documentName = documents[i][0] %}
     {% for j in range(pages | length) %}
         {% set canvasID = "page-" + pages[j][0]|string %}
         {% set baseImageDir = "pages/" + pages[j][2] %}
-        <canvas id="{{canvasID}}" class="drawRectCanvas" width="10" height="10"></canvas>
-        <p>Page {{pages[j][1]}} of {{documentName}}</p>
+        {% set curPage = pages[j][1] %}
+        {% if curPage == pageNum %}
+            <canvas id="{{canvasID}}" class="drawRectCanvas" width="10" height="10"></canvas>
+            <p>Page {{pages[j][1]}} of {{documentName}}</p>
+        {% endif %}
     {% endfor %}
-{% endfor %} -->
+{% endfor %}
 
-<!-- <canvas id = "page-{{}}" class = "drawRectCanvas" width="10" height="10"></canvas> -->
-
-<form method = "POST" action = "/nextPage" enctype="multipart/form-data">
-  <button id = "nextPage" type = "button">  Next Page </button>
-</form>  
-<form method = "POST" action = "/prevPage" enctype="multipart/form-data">
-  <button id = "prevPage" type = "button"> Previous Page </button>
-</form>
+<button id = "nextPage" type = "button">  Next Page </button>
+<button id = "prevPage" type = "button"> Previous Page </button>
 <button id="submitAnnotations" type="button"> Submit! </button>
 <div id='debug'> </div>
 {% endblock %}
