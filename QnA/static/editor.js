@@ -153,6 +153,22 @@ function submitAnnotationsData(){
     });
 }
 
+function nextPage() {
+    return fetch("/nextPage", {
+        method: "POST",
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},    
+        body: JSON.stringify(objects)
+    });
+}
+
+function prevPage() {
+    return fetch("/prevPage", {
+        method: "POST",
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},    
+        body: JSON.stringify(objects)
+    });
+}
+
 function prepareCanvas(canvasID, baseImage){
     var canvas = document.getElementById(canvasID);
     objects[canvasID] = {};
