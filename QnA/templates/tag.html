@@ -2,7 +2,7 @@
 
 {% block body %}
 {% for i in range(images|length) %}
-    {% set imageDir = "static/extracted" + images[i][1] %}
+    {% set imageDir = "static/extracted/" + images[i][1] %}
     <img src="{{imageDir}}", id="image-{{images[i][0]|string}}", alt="image-{{images[i][0]|string}}.png">
 {% endfor %}
 {% endblock %}

@@ -7,10 +7,9 @@
 window.onload = function(){
     document.getElementById('submitAnnotations').addEventListener("click", function(e){
         submitAnnotationsData().then(function(response) {
-            console.log(response.status);
-            return response.text();
-        }).then(function(text) {
-            console.log(text);
+            if (response.redirected){ // Not very safe
+                window.location.href = response.url;
+            }
         });
     });
     {% for i in range(documents|length) %}
