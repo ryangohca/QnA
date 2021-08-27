@@ -148,7 +148,8 @@ function submitAnnotationsData(){
     return fetch("/edit", {
         method: "POST",
         headers: {'Content-Type':'application/x-www-form-urlencoded'},    
-        body: JSON.stringify(objects)
+        body: JSON.stringify(objects),
+        redirect: "follow",
     });
 }
 
