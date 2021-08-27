@@ -9,7 +9,7 @@ app.config['PAGES'] = 'static/pages'
 
 Bootstrap(app)
 
-app.secretkey = "chuucandoitificandoit"
+app.secret_key = "chuucandoitificandoit"
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///app.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Optimisation
 app.config['SQLALCHEMY_ECHO'] = True # See all sql statements that are being run

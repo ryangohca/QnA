@@ -1,7 +1,12 @@
 {% extends "template.html" %}
 
-{% block otherScripts %}
+{% block title %} Editor {% endblock %}
+
+{% block otherStyles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='editor.css') }}">
+{% endblock %}
+
+{% block otherScripts %}
 <script src="{{ url_for('static', filename='editor.js') }}"></script>
 <script>
 window.onload = function(){
@@ -24,7 +29,7 @@ window.onload = function(){
 </script>
 {% endblock %}
 
-{% block body %}
+{% block content %}
 {% for i in range(documents|length) %}
     {% set pages = documents[i][1] %}
     {% set documentName = documents[i][0] %}
