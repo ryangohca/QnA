@@ -1,6 +1,8 @@
 {% extends "template.html" %}
 
-{% block body %}
+{% block title %} Home {% endblock %}
+
+{% block content %}
 <form method="POST" action="/uploadFiles"  enctype="multipart/form-data">
     <label for="filepicker">Choose file(s) to upload:</label>
     <input type="file" name="filepicker" id="filepicker" accept=".pdf,.doc,.docx" multiple>

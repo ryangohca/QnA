@@ -39,7 +39,6 @@ def tag():
     if images is None:
         return "server error: 'croppedImages' not found", 500
     images = json.loads(images)
-    print(images)
     return render_template("tag.html", images=images)
     
 @app.route("/edit", methods=["POST", "GET"])

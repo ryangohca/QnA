@@ -1,11 +1,15 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        {% block otherScripts %}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}
-        {% endblock %}
-    </body>
-</html>
+{% extends "bootstrap/base.html" %}
+
+{% block styles %}
+    {{super()}}
+    {% block otherStyles %}
+        <!-- add custom styles here -->
+    {% endblock %}
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    {% block otherScripts %}
+        <!-- add other scripts here -->
+    {% endblock %}
+{% endblock %}
