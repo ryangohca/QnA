@@ -29,7 +29,7 @@ window.onload = function(){
 </script>
 {% endblock %}
 
-{% block content %}
+<!-- {% block content %}
 {% for i in range(documents|length) %}
     {% set pages = documents[i][1] %}
     {% set documentName = documents[i][0] %}
@@ -39,7 +39,16 @@ window.onload = function(){
         <canvas id="{{canvasID}}" class="drawRectCanvas" width="10" height="10"></canvas>
         <p>Page {{pages[j][1]}} of {{documentName}}</p>
     {% endfor %}
-{% endfor %}
+{% endfor %} -->
+
+<!-- <canvas id = "page-{{}}" class = "drawRectCanvas" width="10" height="10"></canvas> -->
+
+<form method = "POST" action = "/nextPage" enctype="multipart/form-data">
+  <button id = "nextPage" type = "button">  Next Page </button>
+</form>  
+<form method = "POST" action = "/prevPage" enctype="multipart/form-data">
+  <button id = "prevPage" type = "button"> Previous Page </button>
+</form>
 <button id="submitAnnotations" type="button"> Submit! </button>
 <div id='debug'> </div>
 {% endblock %}
