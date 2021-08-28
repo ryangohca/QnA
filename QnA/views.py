@@ -141,7 +141,7 @@ def redirectEdit():
         session['curDoc'] = document
         session['curPageNum'] = 1
         session['curAnnotations'] = {}
-        print(document)
+        print(session)
         return redirect(url_for("editor", document=json.dumps(session['curDoc']),
                                           annotations=session['curAnnotations']))
     else:
