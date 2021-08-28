@@ -4,7 +4,7 @@ import random
 import string
 from collections import namedtuple
 
-from flask import render_template, request, flash, url_for, redirect, make_response, session
+from flask import render_template, request, flash, url_for, redirect, make_response, session, jsonify
 from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
@@ -12,9 +12,7 @@ from docx2pdf import convert
 from QnA import app, db, sess
 from QnA.models import DocumentUploads, Pages, ExtractedImages
 
-curDoc = []
 pageAnnotationData = {}
-curPageNum = 1
 
 def cropImage(rootImage, coords):
     original = Image.open(rootImage)
@@ -47,7 +45,7 @@ def tag():
     
 @app.route("/edit", methods=["POST", "GET"])
 def editor():
-    if (request.method == "POST"):
+    if request.method == "POST":
         scriptDir = os.path.dirname(__file__)
         data = json.loads(list(request.form)[0])
         croppedImages = []
@@ -67,10 +65,11 @@ def editor():
                 croppedImages.append((extractedImage.id, randomName))
         return redirect(url_for('tag', croppedImages=json.dumps(croppedImages)))
 
-    documents = request.args.get('documents')
-    if documents is None:
-        return "server error: 'documents' not found", 500
-    return render_template("editor.html", documents=json.loads(documents), pageNum = session['curPageNum'], 
+    document = request.args.get('document')
+    if document is None:
+        return "server error: 'document' not found", 500
+    print(session)
+    return render_template("editor.html", document=json.loads(document), pageNum = session['curPageNum'], 
                                            annotations = session['curAnnotations'])
 
 @app.route("/nextPage", methods=["POST"])
@@ -80,7 +79,7 @@ def nextPage():
     annotations = data[pageID]["annotations"]
     session['curAnnotations'][pageID] = annotations
     session['curPageNum'] += 1
-    return redirect(url_for("editor", documents = json.dumps(session['curDoc'])))
+    return redirect(url_for("editor", document= json.dumps(session['curDoc'])))
   
 @app.route("/prevPage", methods=["POST"])
 def prevPage():
@@ -89,14 +88,11 @@ def prevPage():
     annotations = data[pageID]["annotations"]
     session['curAnnotations'][pageID] = annotations
     session['curPageNum'] -= 1
-    return redirect(url_for("editor", documents = json.dumps(session['curDoc'])))
+    return redirect(url_for("editor", document= json.dumps(session['curDoc'])))
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
 def uploadFiles():
-    global curDoc, curPageNum
-    
     files = request.files.getlist('filepicker')
-    documents = []
     for file in files:
         originalName, ext = file.filename.split('.')
         newName = generateRandomName()
@@ -109,17 +105,9 @@ def uploadFiles():
         document = DocumentUploads(userID=1, originalName=file.filename, databaseName=newName + '.pdf')
         db.session.add(document)
         db.session.commit()
-        documents.append([document.originalName, extractPdfPages(filePath, documentID=document.id)])
+        extractPdfPages(filePath, documentID=document.id)
     
-    for key in list(session.keys()):
-      session.pop(key)
-    
-    session['curDoc'] = documents
-    session['curPageNum'] = 1
-    session['curAnnotations'] = {}
-    
-    return redirect(url_for("editor", documents=json.dumps(session['curDoc']), 
-                                      annotations = session['curAnnotations']))
+    return redirect(url_for("manage"))
 
 @app.route("/manage", methods=["GET", "POST"])
 def manage():
@@ -130,15 +118,35 @@ def manage():
         # Get first page for preview
         firstPage = Pages.query.filter_by(documentID=document.id).first().databaseName
         if document.percentageCompleted == 100:
-            CompletedDocument = namedtuple('CompletedDocument', ['name', 'previewPageName', 'warnings'])
+            CompletedDocument = namedtuple('CompletedDocument', ['id', 'name', 'previewPageName', 'warnings'])
             warnings = []
             # Add code to fill warnings here
-            completed.append(CompletedDocument(name=document.originalName, previewPageName=firstPage, warnings=warnings))
+            completed.append(CompletedDocument(id=document.id, name=document.originalName, previewPageName=firstPage, warnings=warnings))
         else:
-            UncompletedDocument = namedtuple('UncompletedDocument', ['name', 'previewPageName', 'percentageCompleted'])
-            uncompleted.append(UncompletedDocument(name=document.originalName, previewPageName=firstPage, percentageCompleted=document.percentageCompleted))
+            UncompletedDocument = namedtuple('UncompletedDocument', ['id', 'name', 'previewPageName', 'percentageCompleted'])
+            uncompleted.append(UncompletedDocument(id=document.id, name=document.originalName, previewPageName=firstPage, percentageCompleted=document.percentageCompleted))
+    print(completed)
     return render_template("manage.html", completed=completed, uncompleted=uncompleted)
 
+@app.route("/redirectEdit", methods=["GET", "POST"])
+def redirectEdit():
+    if request.method == "POST":
+        data = json.loads(list(request.form)[0])
+        thisDocumentObj = DocumentUploads.query.filter_by(id=data['documentID']).first()
+        allPages = Pages.query.filter_by(documentID=data['documentID']).all()
+        essentialPagesInfo = [(page.id, page.pageNo, page.databaseName) for page in allPages]
+        document = [thisDocumentObj.originalName, essentialPagesInfo]
+        for key in list(session.keys()):
+            session.pop(key)
+        session['curDoc'] = document
+        session['curPageNum'] = 1
+        session['curAnnotations'] = {}
+        print(document)
+        return redirect(url_for("editor", document=json.dumps(session['curDoc']),
+                                          annotations=session['curAnnotations']))
+    else:
+        return "Unauthorised Access", 503
+      
 @app.route("/")
 def root():
     return render_template("main.html")

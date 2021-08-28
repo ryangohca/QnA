@@ -27,34 +27,30 @@ window.onload = function(){
             window.location.reload(); 
         });
     })
-    // documents = [[documentName, [(pageID, pageNo, databaseName), ...]], ...]
-    {% for i in range(documents|length) %}
-        console.log("{{documents[i][0]}}");
-        console.log("{{documents[i][1]}}");
-        var pageNum = "{{pageNum}}";
-        var canvasID = "page-{{documents[i][1][pageNum - 1][0]}}";
-        var baseImageDir = "static/pages/{{documents[i][1][pageNum - 1][2]}}";
-        var annotations = "{{annotations}}";
-        prepareCanvas(canvasID, baseImageDir, annotations);
-    {% endfor %}
+    // document = [documentName, [(pageID, pageNo, databaseName), ...]
+    console.log("{{document[0]}}");
+    console.log("{{document[1]}}");
+    var pageNum = "{{pageNum}}";
+    var canvasID = "page-{{document[1][pageNum - 1][0]}}";
+    var baseImageDir = "static/pages/{{document[1][pageNum - 1][2]}}";
+    var annotations = {{ annotations|tojson }};
+    prepareCanvas(canvasID, baseImageDir, annotations);
 }
 </script>
 {% endblock %}
 
 {% block content %}
 
-{% for i in range(documents|length) %}
-    {% set pages = documents[i][1] %}
-    {% set documentName = documents[i][0] %}
-    {% for j in range(pages | length) %}
-        {% set canvasID = "page-" + pages[j][0]|string %}
-        {% set baseImageDir = "pages/" + pages[j][2] %}
-        {% set curPage = pages[j][1] %}
-        {% if curPage == pageNum %}
-            <canvas id="{{canvasID}}" class="drawRectCanvas" width="10" height="10"></canvas>
-            <p>Page {{pages[j][1]}} of {{documentName}}</p>
-        {% endif %}
-    {% endfor %}
+{% set pages = document[1] %}
+{% set documentName = document[0] %}
+{% for j in range(pages | length) %}
+    {% set canvasID = "page-" + pages[j][0]|string %}
+    {% set baseImageDir = "pages/" + pages[j][2] %}
+    {% set curPage = pages[j][1] %}
+    {% if curPage == pageNum %}
+        <canvas id="{{canvasID}}" class="drawRectCanvas" width="10" height="10"></canvas>
+        <p>Page {{pages[j][1]}} of {{documentName}}</p>
+    {% endif %}
 {% endfor %}
 
 <button id = "nextPage" type = "button">  Next Page </button>
