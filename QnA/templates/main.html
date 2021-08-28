@@ -1,6 +1,9 @@
 {% extends "template.html" %}
 
 {% block title %} Home {% endblock %}
+{% block otherStyles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+{% endblock %}
 
 {% block content %}
 <h2 class="ms-2 mt-2"> Home </h2>
@@ -10,7 +13,9 @@
             <label for="filepicker">Choose file(s) to upload:</label>
             <input type="file" class="form-control" name="filepicker" id="filepicker" accept=".pdf,.doc,.docx" multiple>
         </div>
-        <button type="submit"> Submit! </button>
+        <div class="w-100">
+          <button type="submit" class="btn btn-primary mt-2 float-end me-2"> Submit! </button>
+        </div>
     </form>
 </div>
 {% endblock %}
