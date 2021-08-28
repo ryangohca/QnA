@@ -6,6 +6,10 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='manage.css') }}">
 {% endblock %}
 
+{% block otherScripts %}
+<script src="{{ url_for('static', filename='manage.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <h2 class="ms-2 mt-2"> Problem Library </h2>
 <div class="d-flex w-100 justify-content-center" id="problemPage">
@@ -17,21 +21,21 @@
                 </button>
             </h2>
             <div id="collapseIncomplete" class="accordion-collapse collapse" aria-labelledby="incompleteHeading">
-                {% for i in range(uncompleted|length) %}
-                    <div class="accordion-body border-bottom">
+                {% for document in uncompleted %}
+                    <button type="button" class="accordion-body border-bottom btn btn-default btn-outline-light w-100" onclick="loadEdit({{document.id}})">
                         <div class="previewImageContainer">
-                            <img class="border previewImage" src="static/pages/{{uncompleted[i].previewPageName}}" alt="previewImage.png" /> 
+                            <img class="border previewImage" src="static/pages/{{document.previewPageName}}" alt="previewImage.png" /> 
                         </div>
                         <div class="otherContent ps-2 pe-2">
-                            <p> {{uncompleted[i].name}} </p>
-                            <p> Extraction Progress: </p>
+                            <p class="text-dark"> {{document.name}} </p>
+                            <p class="text-dark"> Extraction Progress: </p>
                             <div class="progress">
-                                <div class="progress-bar percentageProgressBar" role="progressbar" style="width:{{uncompleted[i].percentageCompleted}}%;" aria-valuenow="{{uncompleted[i].percentageCompleted}}" aria-valuemin="0" aria-valuemax="100">
-                                    {{uncompleted[i].percentageCompleted}}%
+                                <div class="progress-bar percentageProgressBar" role="progressbar" style="width:{{document.percentageCompleted}}%;" aria-valuenow="{{document.percentageCompleted}}" aria-valuemin="0" aria-valuemax="100">
+                                    {{document.percentageCompleted}}%
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </button>
                 {% endfor %}
             </div>
         </div>
@@ -42,15 +46,15 @@
                 </button>
             </h2>
             <div id="collapseComplete" class="accordion-collapse collapse" aria-labelledby="completeHeading">
-                {% for i in range(completed|length) %}
-                    <div class="accordion-body border-bottom">
+                {% for document in completed %}
+                    <button type="button" class="accordion-body border-bottom btn btn-default btn-outline-light w-100" onclick="loadEdit({{document.id}});">
                         <div class="previewImageContainer">
-                            <img class="border previewImage" src="static/pages/{{completed[i].previewPageName}}" alt="previewImage.png" /> 
+                            <img class="border previewImage" src="static/pages/{{document.previewPageName}}" alt="previewImage.png" /> 
                         </div>
                         <div class="otherContent ps-2 pe-2">
-                            <p> {{completed[i].name}} </p>
+                            <p class="text-dark"> {{document.name}} </p>
                         </div>
-                    </div>
+                    </button>
                 {% endfor %}
             </div>
         </div>
