@@ -129,6 +129,7 @@ function setBaseImage(src, canvas) {
                     ctx.drawImage(base.img, 0, 0);
                 }
             }
+            update(canvas);
         };
         allLoaded();
     }
@@ -186,7 +187,6 @@ function prepareCanvas(canvasID, baseImage, annotations){
     if (canvasID in annotations) {
         objects[canvasID]['annotations'] = annotations[canvasID];
     }
-    update(canvas);
 }
 /*
 window.onload = function(){
