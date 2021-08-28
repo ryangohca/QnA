@@ -19,28 +19,23 @@ window.onload = function(){
     });
     document.getElementById("nextPage").addEventListener("click", function(e) {
         nextPage().then(function(response) {
-            window.location.href = window.location.href; // no idea why window.location.reload doenst work
+            window.location.reload();
         });
     })
     document.getElementById("prevPage").addEventListener("click", function(e) {
         prevPage().then(function(response) {
-            window.location.href = window.location.href; // no idea why window.location.reload doenst work
+            window.location.reload(); 
         });
     })
-    // {% for i in range(documents|length) %}
-    //     {% set pages = documents[i][1] %}
-    //     {% for j in range(pages | length) %}
-    //         {% set canvasID = "page-" + pages[j][0]|string %}
-    //         {% set baseImageDir = "static/pages/" + pages[j][2] %}
-    //         prepareCanvas({{canvasID|tojson}}, {{baseImageDir|tojson}});
-    //     {% endfor %}
-    // {% endfor %}
-    console.log("{{documents[0][0]}}");
-    console.log("{{documents[0][1]}}");
-    var pageNum = "{{pageNum}}";
-    var canvasID = "page-{{documents[0][1][pageNum - 1][0]}}";
-    var baseImageDir = "static/pages/{{documents[0][1][pageNum - 1][2]}}";
-    prepareCanvas(canvasID, baseImageDir);
+    // documents = [[documentName, [(pageID, pageNo, databaseName), ...]], ...]
+    {% for i in range(documents|length) %}
+        console.log("{{documents[i][0]}}");
+        console.log("{{documents[i][1]}}");
+        var pageNum = "{{pageNum}}";
+        var canvasID = "page-{{documents[i][1][pageNum - 1][0]}}";
+        var baseImageDir = "static/pages/{{documents[i][1][pageNum - 1][2]}}";
+        prepareCanvas(canvasID, baseImageDir);
+    {% endfor %}
 }
 </script>
 {% endblock %}

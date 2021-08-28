@@ -1,7 +1,9 @@
 Flask
 Flask-SQLAlchemy
 Flask-Bootstrap
+Flask-Session
 Pillow
 PyMuPDF
 docx2pdf
+redis
 
