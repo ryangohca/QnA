@@ -34,4 +34,4 @@ Session object stores:
 '''
 
 from QnA import views, models
-from QnA import clean
+#from QnA import clean
