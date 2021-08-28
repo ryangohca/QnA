@@ -20,7 +20,7 @@
                 {% for i in range(uncompleted|length) %}
                     <div class="accordion-body border-bottom">
                         <div class="previewImageContainer">
-                          <img class="border previewImage" src="static/pages/{{uncompleted[i].previewPageName}}" alt="previewImage.png" /> 
+                            <img class="border previewImage" src="static/pages/{{uncompleted[i].previewPageName}}" alt="previewImage.png" /> 
                         </div>
                         <div class="otherContent ps-2 pe-2">
                             <p> {{uncompleted[i].name}} </p>
@@ -42,9 +42,16 @@
                 </button>
             </h2>
             <div id="collapseComplete" class="accordion-collapse collapse" aria-labelledby="completeHeading">
-                <div class="accordion-body">
-                    Hi!
-                </div>
+                {% for i in range(completed|length) %}
+                    <div class="accordion-body border-bottom">
+                        <div class="previewImageContainer">
+                            <img class="border previewImage" src="static/pages/{{completed[i].previewPageName}}" alt="previewImage.png" /> 
+                        </div>
+                        <div class="otherContent ps-2 pe-2">
+                            <p> {{completed[i].name}} </p>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>
