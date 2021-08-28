@@ -41,6 +41,7 @@ def tag():
     if images is None:
         return "server error: 'croppedImages' not found", 500
     images = json.loads(images)
+    print(images)
     return render_template("tag.html", images=images)
     
 @app.route("/edit", methods=["POST", "GET"])
@@ -74,20 +75,22 @@ def editor():
 
 @app.route("/nextPage", methods=["POST"])
 def nextPage():
-    data = json.loads(list(request.form)[0])
-    pageID = list(data.keys())[0]
-    annotations = data[pageID]["annotations"]
-    session['curAnnotations'][pageID] = annotations
-    session['curPageNum'] += 1
+    if (session['curPageNum'] < len(session['curDoc'][1])):
+        data = json.loads(list(request.form)[0])
+        pageID = list(data.keys())[0]
+        annotations = data[pageID]["annotations"]
+        session['curAnnotations'][pageID] = annotations
+        session['curPageNum'] += 1
     return redirect(url_for("editor", document= json.dumps(session['curDoc'])))
   
 @app.route("/prevPage", methods=["POST"])
 def prevPage():
-    data = json.loads(list(request.form)[0])
-    pageID = list(data.keys())[0]
-    annotations = data[pageID]["annotations"]
-    session['curAnnotations'][pageID] = annotations
-    session['curPageNum'] -= 1
+    if (session['curPageNum'] > 1):
+        data = json.loads(list(request.form)[0])
+        pageID = list(data.keys())[0]
+        annotations = data[pageID]["annotations"]
+        session['curAnnotations'][pageID] = annotations
+        session['curPageNum'] -= 1
     return redirect(url_for("editor", document= json.dumps(session['curDoc'])))
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
@@ -141,7 +144,7 @@ def redirectEdit():
         session['curDoc'] = document
         session['curPageNum'] = 1
         session['curAnnotations'] = {}
-        print(session)
+        print("DOCUMENT: \n ", document)
         return redirect(url_for("editor", document=json.dumps(session['curDoc']),
                                           annotations=session['curAnnotations']))
     else:
