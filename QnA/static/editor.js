@@ -186,6 +186,7 @@ function prepareCanvas(canvasID, baseImage, annotations){
     if (canvasID in annotations) {
         objects[canvasID]['annotations'] = annotations[canvasID];
     }
+    update(canvas);
 }
 /*
 window.onload = function(){
