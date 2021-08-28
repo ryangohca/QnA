@@ -2,8 +2,10 @@ import json
 import os
 import random
 import string
+from collections import namedtuple
 
 from flask import render_template, request, flash, url_for, redirect, make_response, jsonify
+from flask_session import Session
 from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
@@ -78,8 +80,10 @@ def nextPage():
     pageID = list(data.keys())[0]
     annotations = data[pageID]["annotations"]
     pageAnnotationData[pageID] = annotations
+    # session["curPageNum"] += 1
     curPageNum += 1
-    return redirect(url_for("editor", documents = json.dumps(curDoc)))
+    # return redirect(url_for("editor", documents = json.dumps(session["curPageNum"])))
+    return redirect(url_for("editor", documents = json.dumps(curPageNum)))
   
 @app.route("/prevPage", methods=["POST"])
 def prevPage():
@@ -89,7 +93,8 @@ def prevPage():
     annotations = data[pageID]["annotations"]
     pageAnnotationData[pageID] = annotations
     curPageNum -= 1
-    return redirect(url_for("editor", documents = json.dumps(curDoc)))
+    # return redirect(url_for("editor", documents = json.dumps(session["curDoc"])))
+    return redirect(url_for("editor", documents = json.dumps(curPageNum)))
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
 def uploadFiles():
@@ -114,12 +119,28 @@ def uploadFiles():
     curDoc = documents;
     curPageNum = 1
     print(curDoc)
+    # session["curDoc"] = documents
+    # sessoin["curPageNum"] = 1
     return redirect(url_for("editor", documents=json.dumps(curDoc)))
+
+@app.route("/manage", methods=["GET", "POST"])
+def manage():
+    allDocuments = DocumentUploads.query.all()
+    completed = []
+    uncompleted = []
+    for document in allDocuments:
+        # Get first page for preview
+        firstPage = Pages.query.filter_by(documentID=document.id).databaseName
+        if document.percentageCompleted == 100:
+            CompletedDocument = namedtuple('CompletedDocument', ['name', 'previewPageName', 'warnings'])
+            warnings = []
+            # Add code to fill warnings here
+            completed.append(CompletedDocument(name=document.originalName, previewPageName=firstPage, warnings=warnings))
+        else:
+            UncompletedDocument = namedtuple('UncompletedDocument', ['name', 'previewPageName', 'percentageCompleted'])
+            uncompleted.append(UncompletedDocument(name=document.originalName, previewPageName=firstPage, percentageCompleted=percentageCompleted))
+    return render_template("manage.html", completed=completed, uncompleted=uncompleted)
 
 @app.route("/")
 def root():
     return render_template("main.html")
-    
-# @app.route("/edit")
-# def editor():
-#     return render_template("editor.html")

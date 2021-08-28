@@ -7,6 +7,7 @@ class DocumentUploads(db.Model):
     userID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     originalName = db.Column(db.String(256), nullable=False)
     databaseName = db.Column(db.String(110), nullable=False)
+    percentageCompleted = db.Column(db.Integer, server_default=db.text('0'))
     pages = db.relationship('Pages', backref='documentUploads', lazy=True)
     
 class Users(db.Model):

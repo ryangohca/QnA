@@ -3,9 +3,12 @@
 {% block title %} Home {% endblock %}
 
 {% block content %}
-<form method="POST" action="/uploadFiles"  enctype="multipart/form-data">
-    <label for="filepicker">Choose file(s) to upload:</label>
-    <input type="file" name="filepicker" id="filepicker" accept=".pdf,.doc,.docx" multiple>
-    <button type="submit"> Submit! </button>
-</form>
+<h2 class="ms-2 mt-2"> Home </h2>
+<div class="ms-2 mt-2">
+    <form method="POST" action="/uploadFiles"  enctype="multipart/form-data">
+        <label for="filepicker">Choose file(s) to upload:</label>
+        <input type="file" name="filepicker" id="filepicker" accept=".pdf,.doc,.docx" multiple>
+        <button type="submit"> Submit! </button>
+    </form>
+</div>
 {% endblock %}
