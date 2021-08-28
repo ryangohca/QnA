@@ -34,7 +34,8 @@ window.onload = function(){
         var pageNum = "{{pageNum}}";
         var canvasID = "page-{{documents[i][1][pageNum - 1][0]}}";
         var baseImageDir = "static/pages/{{documents[i][1][pageNum - 1][2]}}";
-        prepareCanvas(canvasID, baseImageDir);
+        var annotations = "{{annotations}}";
+        prepareCanvas(canvasID, baseImageDir, annotations);
     {% endfor %}
 }
 </script>

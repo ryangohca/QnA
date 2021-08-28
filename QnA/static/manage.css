@@ -1,0 +1,29 @@
+.previewImage{
+    width:auto; 
+    height:100px;
+}
+
+.previewImageContainer{
+    display: flex;
+    float: left;
+}
+
+.otherContent{
+    float: none;
+    overflow: hidden;
+    height:100%;
+}
+
+.percentageProgressBar{
+    min-width: 2em;
+}
+
+#problemPage > div{
+    width: 75%;
+}
+
+@media only screen and (max-width: 500px){
+    #problemPage div{
+        width: 100%;
+    }
+}

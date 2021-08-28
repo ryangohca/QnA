@@ -2,23 +2,53 @@
 
 {% block title %} Manage {% endblock %}
 
+{% block otherStyles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='manage.css') }}">
+{% endblock %}
+
 {% block content %}
 <h2 class="ms-2 mt-2"> Problem Library </h2>
-<div class="d-flex w-100 justify-content-center">
-    <div class="w-75">
+<div class="d-flex w-100 justify-content-center" id="problemPage">
+    <div>
         <div class="accordion-item">
-            <h2 class="w-100 accordion-header" id="headingTwo">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                    Accordion Item #2
+            <h2 class="w-100 accordion-header" id="incompleteHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIncomplete" aria-expanded="false" aria-controls="collapseIncomplete">
+                    Incomplete / No Tagging
                 </button>
             </h2>
-            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
+            <div id="collapseIncomplete" class="accordion-collapse collapse" aria-labelledby="incompleteHeading">
+                {% for i in range(uncompleted|length) %}
+                    <div class="accordion-body border-bottom">
+                        <div class="previewImageContainer">
+                          <img class="border previewImage" src="static/pages/{{uncompleted[i].previewPageName}}" alt="previewImage.png" /> 
+                        </div>
+                        <div class="otherContent ps-2 pe-2">
+                            <p> {{uncompleted[i].name}} </p>
+                            <p> Extraction Progress: </p>
+                            <div class="progress">
+                                <div class="progress-bar percentageProgressBar" role="progressbar" style="width:{{uncompleted[i].percentageCompleted}}%;" aria-valuenow="{{uncompleted[i].percentageCompleted}}" aria-valuemin="0" aria-valuemax="100">
+                                    {{uncompleted[i].percentageCompleted}}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="w-100 accordion-header" id="completeHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComplete" aria-expanded="false" aria-controls="collapseComplete">
+                    Completed
+                </button>
+            </h2>
+            <div id="collapseComplete" class="accordion-collapse collapse" aria-labelledby="completeHeading">
                 <div class="accordion-body">
-                    <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                    Hi!
                 </div>
             </div>
         </div>
-    </div>  
+    </div>
+    
 </div>
 {% endblock %}
 

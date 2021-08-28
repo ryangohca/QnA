@@ -4,13 +4,12 @@ import random
 import string
 from collections import namedtuple
 
-from flask import render_template, request, flash, url_for, redirect, make_response, jsonify
-from flask_session import Session
+from flask import render_template, request, flash, url_for, redirect, make_response, session
 from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
 
-from QnA import app, db
+from QnA import app, db, sess
 from QnA.models import DocumentUploads, Pages, ExtractedImages
 
 curDoc = []
@@ -71,30 +70,26 @@ def editor():
     documents = request.args.get('documents')
     if documents is None:
         return "server error: 'documents' not found", 500
-    return render_template("editor.html", documents=json.loads(documents), pageNum = curPageNum)
+    return render_template("editor.html", documents=json.loads(documents), pageNum = session['curPageNum'], 
+                                           annotations = session['curAnnotations'])
 
 @app.route("/nextPage", methods=["POST"])
 def nextPage():
-    global curPageNum
     data = json.loads(list(request.form)[0])
     pageID = list(data.keys())[0]
     annotations = data[pageID]["annotations"]
-    pageAnnotationData[pageID] = annotations
-    # session["curPageNum"] += 1
-    curPageNum += 1
-    # return redirect(url_for("editor", documents = json.dumps(session["curPageNum"])))
-    return redirect(url_for("editor", documents = json.dumps(curPageNum)))
+    session['curAnnotations'][pageID] = annotations
+    session['curPageNum'] += 1
+    return redirect(url_for("editor", documents = json.dumps(session['curDoc'])))
   
 @app.route("/prevPage", methods=["POST"])
 def prevPage():
-    global curPageNum
     data = json.loads(list(request.form)[0])
     pageID = list(data.keys())[0]
     annotations = data[pageID]["annotations"]
-    pageAnnotationData[pageID] = annotations
-    curPageNum -= 1
-    # return redirect(url_for("editor", documents = json.dumps(session["curDoc"])))
-    return redirect(url_for("editor", documents = json.dumps(curPageNum)))
+    session['curAnnotations'][pageID] = annotations
+    session['curPageNum'] -= 1
+    return redirect(url_for("editor", documents = json.dumps(session['curDoc'])))
 
 @app.route("/uploadFiles", methods=["GET", "POST"])
 def uploadFiles():
@@ -116,12 +111,15 @@ def uploadFiles():
         db.session.commit()
         documents.append([document.originalName, extractPdfPages(filePath, documentID=document.id)])
     
-    curDoc = documents;
-    curPageNum = 1
-    print(curDoc)
-    # session["curDoc"] = documents
-    # sessoin["curPageNum"] = 1
-    return redirect(url_for("editor", documents=json.dumps(curDoc)))
+    for key in list(session.keys()):
+      session.pop(key)
+    
+    session['curDoc'] = documents
+    session['curPageNum'] = 1
+    session['curAnnotations'] = {}
+    
+    return redirect(url_for("editor", documents=json.dumps(session['curDoc']), 
+                                      annotations = session['curAnnotations']))
 
 @app.route("/manage", methods=["GET", "POST"])
 def manage():
@@ -130,7 +128,7 @@ def manage():
     uncompleted = []
     for document in allDocuments:
         # Get first page for preview
-        firstPage = Pages.query.filter_by(documentID=document.id).databaseName
+        firstPage = Pages.query.filter_by(documentID=document.id).first().databaseName
         if document.percentageCompleted == 100:
             CompletedDocument = namedtuple('CompletedDocument', ['name', 'previewPageName', 'warnings'])
             warnings = []
@@ -138,7 +136,7 @@ def manage():
             completed.append(CompletedDocument(name=document.originalName, previewPageName=firstPage, warnings=warnings))
         else:
             UncompletedDocument = namedtuple('UncompletedDocument', ['name', 'previewPageName', 'percentageCompleted'])
-            uncompleted.append(UncompletedDocument(name=document.originalName, previewPageName=firstPage, percentageCompleted=percentageCompleted))
+            uncompleted.append(UncompletedDocument(name=document.originalName, previewPageName=firstPage, percentageCompleted=document.percentageCompleted))
     return render_template("manage.html", completed=completed, uncompleted=uncompleted)
 
 @app.route("/")
