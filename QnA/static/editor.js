@@ -181,12 +181,12 @@ function prepareCanvas(canvasID, baseImage, annotations){
     canvas.addEventListener("touchstart", function(e){handle_click(e, canvas)});
     canvas.addEventListener("touchmove", function(e){handle_move(e, canvas);});
     canvas.addEventListener("touchend", function(e){handle_release(e, canvas)});
-    setBaseImage(baseImage, canvas);
     console.log(annotations);
     console.log(objects[canvasID]);
     if (canvasID in annotations) {
         objects[canvasID]['annotations'] = annotations[canvasID];
     }
+    setBaseImage(baseImage, canvas);
 }
 /*
 window.onload = function(){

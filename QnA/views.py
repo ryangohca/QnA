@@ -146,7 +146,21 @@ def redirectEdit():
         session['curDoc'] = document
         session['curPageNum'] = 1
         session['curAnnotations'] = {}
-        logging.info("DOCUMENT: \n ", document)
+        # Load annotations that had already been done before
+        for page in allPages:
+            alreadyExtracted = ExtractedImages.query.filter_by(pageID=page.id).all()
+            if len(alreadyExtracted) != 0:
+                canvasID = "page-" + str(page.id)
+                session['curAnnotations'][canvasID] = []
+            for extracted in alreadyExtracted:
+                rect = {}
+                rect['startX'] = extracted.topX
+                rect['startY'] = extracted.topY
+                rect['endX'] = extracted.bottomX
+                rect['endY'] = extracted.bottomY
+                session['curAnnotations'][canvasID].append(rect)
+        logging.info("session" + str(session))
+        logging.info("DOCUMENT: \n " + str(document))
         return redirect(url_for("editor", document=json.dumps(session['curDoc']),
                                           annotations=session['curAnnotations']))
     else:
