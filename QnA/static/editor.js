@@ -188,18 +188,6 @@ function prepareCanvas(canvasID, baseImage, annotations){
     }
     setBaseImage(baseImage, canvas);
 }
-/*
-window.onload = function(){
-    document.getElementById('submitAnnotations').addEventListener("click", function(e){
-        submitAnnotationsData().then(function(response) {
-            console.log(response.status);
-            return response.text();
-        }).then(function(text) {
-            console.log(text);
-        });
-    });
-}
-*/
 
 document.addEventListener("keydown", function(e){switch_mode(e)});
 
@@ -214,6 +202,7 @@ document.addEventListener('mouseup', function(e){
         handle_release(e, currFocusedCanvas);
     }
 });
+
 document.addEventListener('touchstart', function(e){
 });
 
@@ -229,14 +218,3 @@ document.addEventListener('touchend', function(e){
         handle_release(e, currFocusedCanvas);
     }
 });
-
-
-// --- fetch template ---
-/*
-- Can include request headers 
-- Callbacks are returned in type "Promise"
-- I don't actually know how they work
-- Resources:
-https://towardsdatascience.com/talking-to-python-from-javascript-flask-and-the-fetch-api-e0ef3573c451
-https://developers.google.com/web/updates/2015/03/introduction-to-fetch
-*/

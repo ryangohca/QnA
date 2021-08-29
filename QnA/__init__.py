@@ -2,6 +2,7 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "chuucandoitificandoit"
@@ -21,6 +22,8 @@ app.config['SESSION_PERMANENT'] = False
 
 sess = Session()
 sess.init_app(app)
+
+app.wsgi_app = ProxyFix(app.wsgi_app)
 ''' 
 Session object stores:
 {
@@ -32,6 +35,15 @@ Session object stores:
 }
 
 '''
+csp = {
+    'default-src': [
+        '\'self\'',
+        '\'unsafe-inline\'',
+        'cdn.jsdelivr.net',
+        'image.flaticon.com',
+    ]
+}
+#talisman = Talisman(app, content_security_policy=csp)
 
 from QnA import views, models
 #from QnA import clean
