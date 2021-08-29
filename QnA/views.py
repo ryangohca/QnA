@@ -16,8 +16,9 @@ from QnA.models import DocumentUploads, Pages, ExtractedImages
 logging.basicConfig(level=logging.DEBUG)
 
 def cropImage(rootImage, coords):
+    # coords = (startX, startY, endX, endY)
     original = Image.open(rootImage)
-    return original.crop((coords['startX'], coords['startY'], coords['endX'], coords['endY']))
+    return original.crop(coords)
 
 def generateRandomName(length=100):
     return ''.join(random.choice(string.ascii_letters + string.digits) for i in range(length))
@@ -36,7 +37,7 @@ def extractPdfPages(pdfPath, documentID):
     logging.info(pages)
     # Returns a list of tuples (pageID, pageNo, databaseName)
     return pages
-  
+
 @app.route("/tag", methods=["GET", "POST"])
 def tag():
     images = request.args.get("croppedImages")
@@ -52,20 +53,35 @@ def editor():
         scriptDir = os.path.dirname(__file__)
         data = json.loads(list(request.form)[0])
         croppedImages = []
-        for pageID in data:
-            baseImageDir = os.path.join(scriptDir, data[pageID]['baseImageName'])
-            for rects in data[pageID]['annotations']:
-                img = cropImage(baseImageDir, rects)
-                # Save images
-                randomName = generateRandomName() + '.png'
-                imageDir = os.path.join(scriptDir, app.config['EXTRACTED'], randomName)
-                img.save(imageDir)
-                extractedImage = ExtractedImages(pageID=data[pageID]['pageID'], databaseName=randomName,
-                                                topX=rects['startX'], topY=rects['startY'], 
-                                                bottomX=rects['endX'], bottomY=rects['endY'])
-                db.session.add(extractedImage)
-                db.session.commit()
-                croppedImages.append((extractedImage.id, randomName))
+        for canvasID in data:
+            baseImageDir = os.path.join(scriptDir, data[canvasID]['baseImageName'])
+            pageID = data[canvasID]['pageID']
+            submittedAnnotations = {}
+            databaseAnnotations = {}
+            for rects in data[canvasID]['annotations']:
+                submittedAnnotations[(rects['startX'], rects['startY'], rects['endX'], rects['endY'])] = None
+            for annotation in ExtractedImages.query.filter_by(pageID=pageID).all():
+                if annotation not in submittedAnnotations:
+                    fileDir = annotation.databaseName
+                    os.remove(os.path.join(scriptDir, app.config['EXTRACTED'], fileDir))
+                    db.session.delete(annotation)
+                else:
+                    databaseAnnotations[(annotation.topX, annotation.topY, annotation.bottomX, annotation.bottomY)] = (annotation.id, annotation.databaseName)
+            for rects in submittedAnnotations:
+                if rects in databaseAnnotations:
+                    croppedImages.append(databaseAnnotations[rects])
+                else:
+                    img = cropImage(baseImageDir, rects)
+                    # Save images
+                    randomName = generateRandomName() + '.png'
+                    imageDir = os.path.join(scriptDir, app.config['EXTRACTED'], randomName)
+                    img.save(imageDir)
+                    extractedImage = ExtractedImages(pageID=pageID, databaseName=randomName,
+                                                    topX=rects[0], topY=rects[1], 
+                                                    bottomX=rects[2], bottomY=rects[3])
+                    db.session.add(extractedImage)
+                    db.session.commit()
+                    croppedImages.append((extractedImage.id, randomName))
         return redirect(url_for('tag', croppedImages=json.dumps(croppedImages)))
 
     document = request.args.get('document')
@@ -95,7 +111,7 @@ def prevPage():
         session['curPageNum'] -= 1
     return redirect(url_for("editor", document= json.dumps(session['curDoc'])))
 
-@app.route("/uploadFiles", methods=["GET", "POST"])
+@app.route("/uploadFiles", methods=["POST"])
 def uploadFiles():
     files = request.files.getlist('filepicker')
     for file in files:
@@ -112,7 +128,7 @@ def uploadFiles():
         db.session.commit()
         extractPdfPages(filePath, documentID=document.id)
     
-    return redirect(url_for("manage"))
+    return redirect(url_for("manage", _scheme="https", _external=True))
 
 @app.route("/manage", methods=["GET", "POST"])
 def manage():

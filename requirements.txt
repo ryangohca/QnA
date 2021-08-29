@@ -2,6 +2,7 @@ Flask
 Flask-SQLAlchemy
 Flask-Bootstrap
 Flask-Session
+Flask-Talisman
 Pillow
 PyMuPDF
 docx2pdf

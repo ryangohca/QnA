@@ -8,7 +8,7 @@
 {% block content %}
 <h2 class="ms-2 mt-2"> Home </h2>
 <div class="ms-2 mt-2">
-    <form method="POST" action="/uploadFiles"  enctype="multipart/form-data">
+    <form method="POST" action="{{url_for('uploadFiles')}}"  enctype="multipart/form-data">
         <div class="form-group files">
             <label for="filepicker">Choose file(s) to upload:</label>
             <input type="file" class="form-control" name="filepicker" id="filepicker" accept=".pdf,.doc,.docx" multiple>
