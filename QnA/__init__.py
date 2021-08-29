@@ -13,7 +13,7 @@ Bootstrap(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///app.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Optimisation
-app.config['SQLALCHEMY_ECHO'] = True # See all sql statements that are being run
+app.config['SQLALCHEMY_ECHO'] = False # See all sql statements that are being run
 db = SQLAlchemy(app)
 
 app.config['SESSION_TYPE'] = 'filesystem'

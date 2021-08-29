@@ -2,6 +2,7 @@ import json
 import os
 import random
 import string
+import logging
 from collections import namedtuple
 
 from flask import render_template, request, flash, url_for, redirect, make_response, session, jsonify
@@ -12,7 +13,7 @@ from docx2pdf import convert
 from QnA import app, db, sess
 from QnA.models import DocumentUploads, Pages, ExtractedImages
 
-pageAnnotationData = {}
+logging.basicConfig(level=logging.DEBUG)
 
 def cropImage(rootImage, coords):
     original = Image.open(rootImage)
@@ -32,6 +33,7 @@ def extractPdfPages(pdfPath, documentID):
         db.session.add(page)
         db.session.commit()
         pages.append((page.id, pageNo, name))
+    logging.info(pages)
     # Returns a list of tuples (pageID, pageNo, databaseName)
     return pages
   
@@ -41,7 +43,7 @@ def tag():
     if images is None:
         return "server error: 'croppedImages' not found", 500
     images = json.loads(images)
-    print(images)
+    logging.info(images)
     return render_template("tag.html", images=images)
     
 @app.route("/edit", methods=["POST", "GET"])
@@ -69,7 +71,7 @@ def editor():
     document = request.args.get('document')
     if document is None:
         return "server error: 'document' not found", 500
-    print(session)
+    logging.info(session)
     return render_template("editor.html", document=json.loads(document), pageNum = session['curPageNum'], 
                                            annotations = session['curAnnotations'])
 
@@ -128,7 +130,7 @@ def manage():
         else:
             UncompletedDocument = namedtuple('UncompletedDocument', ['id', 'name', 'previewPageName', 'percentageCompleted'])
             uncompleted.append(UncompletedDocument(id=document.id, name=document.originalName, previewPageName=firstPage, percentageCompleted=document.percentageCompleted))
-    print(completed)
+    logging.info(completed)
     return render_template("manage.html", completed=completed, uncompleted=uncompleted)
 
 @app.route("/redirectEdit", methods=["GET", "POST"])
@@ -144,7 +146,7 @@ def redirectEdit():
         session['curDoc'] = document
         session['curPageNum'] = 1
         session['curAnnotations'] = {}
-        print("DOCUMENT: \n ", document)
+        logging.info("DOCUMENT: \n ", document)
         return redirect(url_for("editor", document=json.dumps(session['curDoc']),
                                           annotations=session['curAnnotations']))
     else:
