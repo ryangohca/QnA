@@ -27,7 +27,8 @@ window.onload = function(){
             window.location.reload(); 
         });
     })
-    // document = [documentName, [(pageID, pageNo, databaseName), ...]
+    // document = [documentName, [(pageID, pageNo, databaseName), ...], documentID]
+    objects['_currDocumentID'] = {{document[2]}};
     console.log("{{document[0]}}");
     console.log("{{document[1]}}");
     var pageNum = "{{pageNum}}";
