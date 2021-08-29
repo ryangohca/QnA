@@ -35,15 +35,6 @@ Session object stores:
 }
 
 '''
-csp = {
-    'default-src': [
-        '\'self\'',
-        '\'unsafe-inline\'',
-        'cdn.jsdelivr.net',
-        'image.flaticon.com',
-    ]
-}
-#talisman = Talisman(app, content_security_policy=csp)
 
 from QnA import views, models
 #from QnA import clean

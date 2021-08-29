@@ -2,9 +2,14 @@
 
 {% block title %} Tag {% endblock %}
 
+{% block otherScripts %}
+<script src="{{ url_for('static', filename='redirects.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 {% for i in range(images|length) %}
     {% set imageDir = "static/extracted/" + images[i][1] %}
     <img src="{{imageDir}}", id="image-{{images[i][0]|string}}", alt="image-{{images[i][0]|string}}.png">
 {% endfor %}
+<button type="button" id="backEdit" class="btn btn-primary mt-2 float-end me-2" onclick="loadEdit({{documentID}})"> Back to Edit </button>
 {% endblock %}

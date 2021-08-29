@@ -41,11 +41,14 @@ def extractPdfPages(pdfPath, documentID):
 @app.route("/tag", methods=["GET", "POST"])
 def tag():
     images = request.args.get("croppedImages")
+    documentID = request.args.get("documentID")
     if images is None:
         return "server error: 'croppedImages' not found", 500
+    if documentID is None:
+        return "server error: 'documentID' not found", 500
     images = json.loads(images)
     logging.info(images)
-    return render_template("tag.html", images=images)
+    return render_template("tag.html", images=images, documentID=documentID)
     
 @app.route("/edit", methods=["POST", "GET"])
 def editor():
@@ -53,7 +56,10 @@ def editor():
         scriptDir = os.path.dirname(__file__)
         data = json.loads(list(request.form)[0])
         croppedImages = []
+        documentID = data['_currDocumentID']
         for canvasID in data:
+            if canvasID == '_currDocumentID':
+                continue
             baseImageDir = os.path.join(scriptDir, data[canvasID]['baseImageName'])
             pageID = data[canvasID]['pageID']
             submittedAnnotations = {}
@@ -61,7 +67,7 @@ def editor():
             for rects in data[canvasID]['annotations']:
                 submittedAnnotations[(rects['startX'], rects['startY'], rects['endX'], rects['endY'])] = None
             for annotation in ExtractedImages.query.filter_by(pageID=pageID).all():
-                if annotation not in submittedAnnotations:
+                if (annotation.topX, annotation.topY, annotation.bottomX, annotation.bottomY) not in submittedAnnotations:
                     fileDir = annotation.databaseName
                     os.remove(os.path.join(scriptDir, app.config['EXTRACTED'], fileDir))
                     db.session.delete(annotation)
@@ -82,7 +88,7 @@ def editor():
                     db.session.add(extractedImage)
                     db.session.commit()
                     croppedImages.append((extractedImage.id, randomName))
-        return redirect(url_for('tag', croppedImages=json.dumps(croppedImages)))
+        return redirect(url_for('tag', croppedImages=json.dumps(croppedImages), documentID=documentID))
 
     document = request.args.get('document')
     if document is None:
@@ -156,7 +162,7 @@ def redirectEdit():
         thisDocumentObj = DocumentUploads.query.filter_by(id=data['documentID']).first()
         allPages = Pages.query.filter_by(documentID=data['documentID']).all()
         essentialPagesInfo = [(page.id, page.pageNo, page.databaseName) for page in allPages]
-        document = [thisDocumentObj.originalName, essentialPagesInfo]
+        document = [thisDocumentObj.originalName, essentialPagesInfo, thisDocumentObj.id]
         for key in list(session.keys()):
             session.pop(key)
         session['curDoc'] = document
