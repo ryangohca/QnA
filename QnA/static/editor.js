@@ -179,7 +179,7 @@ function prepareCanvas(canvasID, baseImage, annotations){
     canvas.addEventListener("mousemove", function(e){handle_move(e, canvas)});
     canvas.addEventListener("mouseup", function(e){handle_release(e, canvas)});
     canvas.addEventListener("touchstart", function(e){handle_click(e, canvas)});
-    canvas.addEventListener("touchmove", function(e){handle_move(e, canvas);});
+    canvas.addEventListener("touchmove", function(e){e.preventDefault(); handle_move(e, canvas);});
     canvas.addEventListener("touchend", function(e){handle_release(e, canvas)});
     console.log(annotations);
     console.log(objects[canvasID]);
@@ -203,11 +203,9 @@ document.addEventListener('mouseup', function(e){
     }
 });
 
-document.addEventListener('touchstart', function(e){
-});
+document.addEventListener('touchstart', function(e){}); //listen so touchmove works
 
-document.addEventListener('touchend', function(e){
-    //e.preventDefault();
+document.addEventListener('touchmove', function(e){
     if (drawing){
         handle_move(e, currFocusedCanvas);
     }
