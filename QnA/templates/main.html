@@ -11,7 +11,7 @@
     <form method="POST" action="{{url_for('uploadFiles')}}"  enctype="multipart/form-data">
         <div class="form-group files">
             <label for="filepicker">Choose file(s) to upload:</label>
-            <input type="file" class="form-control" name="filepicker" id="filepicker" accept=".pdf,.doc,.docx" multiple>
+            <input type="file" class="form-control" name="filepicker" id="filepicker" accept=".pdf,.doc,.docx" multiple required>
         </div>
         <div class="w-100">
           <button type="submit" class="btn btn-primary mt-2 float-end me-2"> Submit! </button>

@@ -66,7 +66,9 @@ def insert_dummy_user():
     db.session.add(dummy)
     db.session.commit()
     
-#db.drop_all()
-db.create_all()
-#insert_dummy_user()
+def refreshDb():
+    db.drop_all()
+    db.create_all()
+    insert_dummy_user()
     
+#refreshDb()

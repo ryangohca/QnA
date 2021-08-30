@@ -38,6 +38,11 @@ def extractPdfPages(pdfPath, documentID):
     # Returns a list of tuples (pageID, pageNo, databaseName)
     return pages
 
+def saveAnnotationsToSession(data):
+    canvasID = list(data.keys())[1] #first key is always '_currDocumentID'
+    annotations = data[canvasID]["annotations"]
+    session['curAnnotations'][canvasID] = annotations
+    
 @app.route("/tag", methods=["GET", "POST"])
 def tag():
     images = request.args.get("croppedImages")
@@ -54,17 +59,22 @@ def tag():
 def editor():
     if request.method == "POST":
         scriptDir = os.path.dirname(__file__)
+        # Handle data submitted from current page (the page user is at when he clicks submit)
+        # We can do so by saving data here to sessions, then extract from there
         data = json.loads(list(request.form)[0])
-        croppedImages = []
         documentID = data['_currDocumentID']
-        for canvasID in data:
+        saveAnnotationsToSession(data)
+        annotationsData = session['curAnnotations']
+        croppedImages = []
+        for canvasID in annotationsData:
             if canvasID == '_currDocumentID':
                 continue
-            baseImageDir = os.path.join(scriptDir, data[canvasID]['baseImageName'])
-            pageID = data[canvasID]['pageID']
+            pageID = int(canvasID.split('-')[1])
+            baseImageDir = os.path.join(scriptDir, 'static/pages', Pages.query.filter_by(id=pageID).first().databaseName)
+            logging.info(baseImageDir)
             submittedAnnotations = {}
             databaseAnnotations = {}
-            for rects in data[canvasID]['annotations']:
+            for rects in annotationsData[canvasID]:
                 submittedAnnotations[(rects['startX'], rects['startY'], rects['endX'], rects['endY'])] = None
             for annotation in ExtractedImages.query.filter_by(pageID=pageID).all():
                 if (annotation.topX, annotation.topY, annotation.bottomX, annotation.bottomY) not in submittedAnnotations:
@@ -101,21 +111,17 @@ def editor():
 def nextPage():
     if (session['curPageNum'] < len(session['curDoc'][1])):
         data = json.loads(list(request.form)[0])
-        pageID = list(data.keys())[0]
-        annotations = data[pageID]["annotations"]
-        session['curAnnotations'][pageID] = annotations
+        saveAnnotationsToSession(data)
         session['curPageNum'] += 1
-    return redirect(url_for("editor", document= json.dumps(session['curDoc'])))
+    return redirect(url_for("editor", document=json.dumps(session['curDoc'])))
   
 @app.route("/prevPage", methods=["POST"])
 def prevPage():
     if (session['curPageNum'] > 1):
         data = json.loads(list(request.form)[0])
-        pageID = list(data.keys())[0]
-        annotations = data[pageID]["annotations"]
-        session['curAnnotations'][pageID] = annotations
+        saveAnnotationsToSession(data)
         session['curPageNum'] -= 1
-    return redirect(url_for("editor", document= json.dumps(session['curDoc'])))
+    return redirect(url_for("editor", document=json.dumps(session['curDoc'])))
 
 @app.route("/uploadFiles", methods=["POST"])
 def uploadFiles():
