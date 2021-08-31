@@ -59,7 +59,7 @@ class Answers(db.Model):
     answerText = db.Column(db.String(256), nullable=True)
     questionNo = db.Column(db.Integer, nullable=True)
     questionPart = db.Column(db.String(5), nullable=True)
-
+  
 def insert_dummy_user():
     dummy = Users(username='admin')
     dummy.set_password('admin')
