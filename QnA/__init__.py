@@ -39,4 +39,4 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 
 
 from QnA import views, models
-#from QnA import clean
+# from QnA import clean
