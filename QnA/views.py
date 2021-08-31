@@ -42,7 +42,7 @@ def extractPdfPages(pdfPath, documentID):
 def saveAnnotationsToSession(data):
     canvasID = list(data.keys())[1] #first key is always '_currDocumentID'
     annotations = data[canvasID]["annotations"]
-    session['curAnnotations'][canvasID] = annotations
+    session['edit']['curAnnotations'][canvasID] = annotations
     
 @app.route("/tag", methods=["GET", "POST"])
 def tag():
@@ -54,7 +54,15 @@ def tag():
         return "server error: 'documentID' not found", 500
     images = json.loads(images)
     logging.info(images)
-    return render_template("tag.html", images=images, documentID=documentID)
+    session['tag']['documentID'] = documentID
+    session['tag']['croppedImages'] = images
+    return render_template("tag.html", images=images, documentID=documentID, pageNum=session['tag']['pageNum'])
+  
+@app.route("/saveTaggedData", methods=["GET", "POST"])
+def saveTaggedData():
+    data = request.form
+    print("Received: ", data["question"], data["topic"])
+    return redirect(url_for('tag', documentID=session['tag']['documentID'], croppedImages=json.dumps(session['tag']['croppedImages'])))
     
 @app.route("/edit", methods=["POST", "GET"])
 def editor():
@@ -65,7 +73,7 @@ def editor():
         data = json.loads(list(request.form)[0])
         documentID = data['_currDocumentID']
         saveAnnotationsToSession(data)
-        annotationsData = session['curAnnotations']
+        annotationsData = session['edit']['curAnnotations']
         croppedImages = []
         for canvasID in annotationsData:
             if canvasID == '_currDocumentID':
@@ -100,22 +108,25 @@ def editor():
                     db.session.add(extractedImage)
                     db.session.commit()
                     croppedImages.append((extractedImage.id, randomName))
+        
+        session['tag'] = {}
+        session['tag']['pageNum'] = 0
         return redirect(url_for('tag', croppedImages=json.dumps(croppedImages), documentID=documentID))
 
     document = request.args.get('document')
     if document is None:
         return "server error: 'document' not found", 500
     logging.info(session)
-    return render_template("editor.html", document=json.loads(document), pageNum = session['curPageNum'], 
-                                           annotations = session['curAnnotations'])
+    return render_template("editor.html", document=json.loads(document), pageNum = session['edit']['curPageNum'], 
+                                           annotations = session['edit']['curAnnotations'])
 
 @app.route("/nextPage", methods=["POST"])
 def nextPage():
-    if (session['curPageNum'] < len(session['curDoc'][1])):
+    if (session['edit']['curPageNum'] < len(session['edit']['curDoc'][1])):
         data = json.loads(list(request.form)[0])
         saveAnnotationsToSession(data)
-        session['curPageNum'] += 1
-    return redirect(url_for("editor", document=json.dumps(session['curDoc'])))
+        session['edit']['curPageNum'] += 1
+    return redirect(url_for("editor", document=json.dumps(session['edit']['curDoc'])))
   
 @app.route("/prevPage", methods=["POST"])
 def prevPage():
@@ -124,6 +135,18 @@ def prevPage():
         saveAnnotationsToSession(data)
         session['curPageNum'] -= 1
     return redirect(url_for("editor", document=json.dumps(session['curDoc'])))
+
+@app.route("/nextImage", methods=["POST"])
+def nextImage():
+    if (session['tag']['pageNum'] + 1 < len(session['tag']['croppedImages'])):
+        session['tag']['pageNum'] += 1
+    return redirect(url_for("tag", croppedImages=json.dumps(session['tag']['croppedImages']), documentID=session['tag']['documentID'], _scheme="https", _external=True))
+
+@app.route("/prevImage", methods=["POST"])
+def prevImage():
+    if (session['tag']['pageNum'] > 0):
+        session['tag']['pageNum'] -= 1
+    return redirect(url_for("tag", croppedImages=json.dumps(session['tag']['croppedImages']), documentID=session['tag']['documentID'], _scheme="https", _external=True))
 
 @app.route("/uploadFiles", methods=["POST"])
 def uploadFiles():
@@ -173,26 +196,27 @@ def redirectEdit():
         document = [thisDocumentObj.originalName, essentialPagesInfo, thisDocumentObj.id]
         for key in list(session.keys()):
             session.pop(key)
-        session['curDoc'] = document
-        session['curPageNum'] = 1
-        session['curAnnotations'] = {}
+        session['edit'] = {}
+        session['edit']['curDoc'] = document
+        session['edit']['curPageNum'] = 1
+        session['edit']['curAnnotations'] = {}
         # Load annotations that had already been done before
         for page in allPages:
             alreadyExtracted = ExtractedImages.query.filter_by(pageID=page.id).all()
             if len(alreadyExtracted) != 0:
                 canvasID = "page-" + str(page.id)
-                session['curAnnotations'][canvasID] = []
+                session['edit']['curAnnotations'][canvasID] = []
             for extracted in alreadyExtracted:
                 rect = {}
                 rect['startX'] = extracted.topX
                 rect['startY'] = extracted.topY
                 rect['endX'] = extracted.bottomX
                 rect['endY'] = extracted.bottomY
-                session['curAnnotations'][canvasID].append(rect)
+                session['edit']['curAnnotations'][canvasID].append(rect)
         logging.info("session" + str(session))
         logging.info("DOCUMENT: \n " + str(document))
-        return redirect(url_for("editor", document=json.dumps(session['curDoc']),
-                                          annotations=session['curAnnotations']))
+        return redirect(url_for("editor", document=json.dumps(session['edit']['curDoc']),
+                                          annotations=session['edit']['curAnnotations']))
     else:
         return "Unauthorised Access", 503
       

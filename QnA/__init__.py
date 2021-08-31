@@ -26,10 +26,17 @@ sess.init_app(app)
 ''' 
 Session object stores:
 {
-  curPageNum: current page number in editor
-  curDoc: document object of current file
-  curAnnotations: {
-    pageID: []
+  edit: {
+      curPageNum: current page number in editor
+      curDoc: document object of current file
+      curAnnotations: {
+        pageID: []
+      }
+  }
+  tag: {
+      documentID
+      croppedImages
+      pageNum
   }
 }
 
@@ -39,4 +46,4 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 
 
 from QnA import views, models
-# from QnA import clean
+from QnA import clean

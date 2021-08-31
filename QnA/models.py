@@ -71,4 +71,4 @@ def refreshDb():
     db.create_all()
     insert_dummy_user()
     
-#refreshDb()
+# refreshDb()

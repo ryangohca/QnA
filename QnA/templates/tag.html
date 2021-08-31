@@ -9,7 +9,31 @@
 {% block content %}
 {% for i in range(images|length) %}
     {% set imageDir = "static/extracted/" + images[i][1] %}
-    <img src="{{imageDir}}", id="image-{{images[i][0]|string}}", alt="image-{{images[i][0]|string}}.png">
+    {% if i == pageNum %}
+        <img src="{{imageDir}}", id="image-{{images[i][0]|string}}", alt="image-{{images[i][0]|string}}.png">
+        <p>Extracted Image {{i + 1}}</p>
+        <form method="POST" action="/saveTaggedData" enctype="multipart/form-data">
+            <div class="row mb-3">
+                <label for="imageType">Type:</label>  
+                <select class="form-select" name="imageType" required>
+                    <option value="question">Question Statement</option>  
+                    <option value="answer">Answer</option>
+                </select>    
+                <label for="imageTopic">Topic:</label>
+                <input type="text" name="imageTopic">
+            </div>
+            <div>
+                <button class="btn btn-primary" type="submit">Confirm</button>
+            </div>
+        </form>
+    {% endif %}
 {% endfor %}
+<form method="POST" action="/nextImage">
+    <button type="submit" id="nextImage" class="btn btn-primary mt-2 float-end me-2"> Next </button>
+</form>
+<form method="POST" action="/prevImage">
+    <button type="submit" id="prevImage" class="btn btn-primary mt-2 float-end me-2"> Prev </button>
+</form>
 <button type="button" id="backEdit" class="btn btn-primary mt-2 float-end me-2" onclick="loadEdit({{documentID}})"> Back to Edit </button>
 {% endblock %}
+
