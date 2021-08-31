@@ -1,0 +1,113 @@
+/* login page does not inherit from main page, so we should not include 'main.css' in login page */
+/* hence there may be some repeated styles here */
+.flexcontainer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 3px;
+}
+
+.centered{
+    text-align: center;
+}
+
+#infoandlogin{
+    display: table;
+    width: 100%;
+    min-height: 100vh;
+    padding: 1px;
+}
+
+/* display: table-cell makes both div heights the same */
+#loginformdiv{
+    display: table-cell;
+    width: 40%;
+    min-height: 100vh;
+    border: 1px solid black;
+}
+
+#infocol{
+    display: table-cell;
+    width: 60%;
+    min-height: 100vh;
+    border: 1px solid black;
+    position: relative;
+    text-align: center;
+    background-repeat: repeat;
+    background-size: 100% auto;
+    height: 100%;
+}
+
+hr {
+    margin: 10px 0;
+    border-top: 1px solid #bdb6b6;
+}
+
+#orseparator{
+    margin: 3px 0;
+}
+
+#loginformdiv form input[type=submit]{
+    display: block;
+    margin: 0 auto;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+#infocol img{
+    width: 100%;
+    visibility: hidden;
+    display: none;
+}
+
+#infoImageText{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#infoImageText>*{
+  color: #f2f2f2;
+}
+
+@media only screen and (max-width: 750px){
+    #infoandlogin{
+        display: block;
+        width: 100%;
+        min-height: unset;
+        padding: 1px;
+    }
+
+    #infocol{
+        display: block;
+        width: 100%;
+        min-height: unset;
+        border: 1px solid black;
+        position: relative;
+        text-align: center;
+        background-repeat: no-repeat;
+        background-size: 100% auto;
+        height: auto;
+        overflow-y: scroll;
+    }
+
+    #infoImageText{
+        top: 0;
+        width: 50%;
+        left: 50%;
+        transform: translate(-50%);
+    }
+
+    #infocol img{
+        display: block;
+    }
+
+    #loginformdiv{
+        display: block;
+        width: 100%;
+        min-height: unset;
+        border: 1px solid black;
+    }
+
+}

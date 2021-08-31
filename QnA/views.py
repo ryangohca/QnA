@@ -12,6 +12,7 @@ from docx2pdf import convert
 
 from QnA import app, db, sess
 from QnA.models import DocumentUploads, Pages, ExtractedImages
+from QnA.forms import LoginForm, SignupForm
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -83,6 +84,7 @@ def editor():
                     db.session.delete(annotation)
                 else:
                     databaseAnnotations[(annotation.topX, annotation.topY, annotation.bottomX, annotation.bottomY)] = (annotation.id, annotation.databaseName)
+            db.session.commit()
             for rects in submittedAnnotations:
                 if rects in databaseAnnotations:
                     croppedImages.append(databaseAnnotations[rects])
@@ -194,6 +196,25 @@ def redirectEdit():
     else:
         return "Unauthorised Access", 503
       
+
+@app.route("/logout")
+def logout():
+    return redirect(url_for("root"))
+  
+@app.route("/login")
+def login():
+    return redirect(url_for('home'))
+  
+@app.route("/signUp")
+def signUp():
+    return redirect(url_for('home'))
+  
+@app.route("/home")
+def home():
+    return render_template("main.html")
+    
 @app.route("/")
 def root():
-    return render_template("main.html")
+    form = LoginForm()
+    signup = SignupForm()
+    return render_template("index.html", loginForm=form, signupForm=signup)

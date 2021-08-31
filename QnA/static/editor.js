@@ -80,6 +80,7 @@ function handle_click(evt, canvas) {
             if (targetPos.x >= rect.startX && targetPos.x <= rect.endX) {
                 if (targetPos.y >= rect.startY && targetPos.y <= rect.endY) {
                     objects[currFocusedCanvas.id]['annotations'].splice(counter, 1);
+                    
                     update(currFocusedCanvas);
                     break;
                 }
