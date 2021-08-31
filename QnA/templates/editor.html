@@ -8,6 +8,7 @@
 
 {% block otherScripts %}
 <script src="{{ url_for('static', filename='editor.js') }}"></script>
+<script src="{{ url_for('static', filename='redirects.js') }}"></script>
 <script>
 window.onload = function(){
     document.getElementById('submitAnnotations').addEventListener("click", function(e){
@@ -38,6 +39,7 @@ window.onload = function(){
     prepareCanvas(canvasID, baseImageDir, annotations);
 }
 </script>
+
 {% endblock %}
 
 {% block content %}
