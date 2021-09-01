@@ -18,7 +18,7 @@
 
 {% macro render_field(field) %}
     <div>
-        {{ field.label }}
+        {{ field.label(class_="form-check-label") }}
         {# following input autocomplete guides #}
         {% if field.id == "newPassword" or field.id == "confirm" %}
             {{ field(class_="form-control border", autocomplete="new-password", **kwargs)|safe }}
@@ -26,6 +26,8 @@
             {{ field(class_="form-control border", autocomplete="current-password", **kwargs)|safe }}
         {% elif field.name == "username" %}
             {{ field(class_="form-control border", autocomplete="username", **kwargs)|safe }}
+        {% elif field.type == "BooleanField" %}
+            {{ field(class_="form-check-input border", **kwargs)|safe }}
         {% else %}
             {{ field(class_="form-control border", **kwargs)|safe }}
         {% endif %}
@@ -55,7 +57,8 @@
         <form action="{{ url_for('login') }}" method="POST" id="loginForm" class="container">
             {{ render_field(loginForm.username) }}
             {{ render_field(loginForm.password) }}
-            <input type="submit" value="Log In"></input>
+            {{ render_field(loginForm.remember_me) }}
+            <button type="submit" class="btn btn-primary mt-2 w-100"> Sign In </button>
         </form>
         <hr>
         <h4 class="text-center" id="orseparator"> OR </h4>
@@ -65,7 +68,7 @@
             {{ render_field(signupForm.username) }}
             {{ render_field(signupForm.password) }}
             {{ render_field(signupForm.confirm) }}
-            <input type="submit" value="Sign Up"></input>
+            <button type="submit" class="btn btn-secondary mt-2 w-100"> Sign Up </button>
         </form>
     </div>
 </div>
