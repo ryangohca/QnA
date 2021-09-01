@@ -19,6 +19,11 @@ class LoginForm(FlaskForm):
         if not userExists(form, field):
             raise ValidationError("Username does not exist in server.")
             
+    def validate_password(form, field):
+        user = Users.query.filter_by(username=form.username.data).first()
+        if not user.check_password(field.data):
+            raise ValidationError("Password is incorrect.")
+            
 class SignupForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired(), Length(6, -1, "Password must be at least 6 characters long.")])
@@ -46,7 +51,7 @@ class SignupForm(FlaskForm):
             form.password.errors.append("Password must have at least 1 lowercase character.")
             validated = False 
         
-        if form.username in password:
+        if form.username.data in password:
             form.name.errors.append("Password must not contain username.")
             validated = False
             
