@@ -10,22 +10,24 @@
 {% for i in range(images|length) %}
     {% set imageDir = "static/extracted/" + images[i][1] %}
     {% if i == pageNum %}
-        <img src="{{imageDir}}", id="image-{{images[i][0]|string}}", alt="image-{{images[i][0]|string}}.png">
-        <p>Extracted Image {{i + 1}}</p>
-        <form method="POST" action="/saveTaggedData" enctype="multipart/form-data">
-            <div class="row mb-3">
-                <label for="imageType">Type:</label>  
-                <select class="form-select" name="imageType" required>
-                    <option value="question">Question Statement</option>  
-                    <option value="answer">Answer</option>
-                </select>    
-                <label for="imageTopic">Topic:</label>
-                <input type="text" name="imageTopic">
-            </div>
-            <div>
-                <button class="btn btn-primary" type="submit">Confirm</button>
-            </div>
-        </form>
+        <div class="container">
+            <img src="{{imageDir}}", id="image-{{images[i][0]|string}}", alt="image-{{images[i][0]|string}}.png">
+            <p>Extracted Image {{i + 1}}</p>
+            <form method="POST" action="/saveTaggedData" enctype="multipart/form-data">
+                <div class="row mb-3">
+                    <label for="imageType">Type:</label>  
+                    <select class="form-select" name="imageType" required>
+                        <option value="question">Question Statement</option>  
+                        <option value="answer">Answer</option>
+                    </select>    
+                    <label for="imageTopic">Topic:</label>
+                    <input type="text" name="imageTopic">
+                </div>
+                <div>
+                    <button class="btn btn-primary" type="submit">Confirm</button>
+                </div>
+            </form>
+        </div>  
     {% endif %}
 {% endfor %}
 <form method="POST" action="/nextImage">

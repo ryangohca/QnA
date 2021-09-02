@@ -1,7 +1,7 @@
 import string
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField
+from wtforms import StringField, PasswordField, BooleanField, HiddenField
 from wtforms.validators import ValidationError, DataRequired, EqualTo, Length
 
 from QnA.models import Users
@@ -13,6 +13,7 @@ def userExists(form, field):
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
+    formName = HiddenField(default="login")
     remember_me = BooleanField('Remember Me')
     
     def validate_username(form, field):
@@ -30,6 +31,7 @@ class SignupForm(FlaskForm):
     confirm = PasswordField('Confirm Password', validators=[
         EqualTo("password", "Passwords do not match!")
     ])
+    formName = HiddenField(default='signup')
     
     def validate_username(form, field):
         if userExists(form, field):
