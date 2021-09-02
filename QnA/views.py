@@ -260,6 +260,10 @@ def root():
         if request.form['formName'] == 'signup':
             signupForm = SignupForm(request.form)
             if signupForm.validate_on_submit():
+                newUser = Users(username=signupForm.username.data.strip())
+                newUser.set_password(signupForm.password.data)
+                db.session.add(newUser)
+                db.session.commit()
                 return loginUser(signupForm.username.data.strip(), signupForm.remember_me.data)
             else:
                 return render_template("index.html", loginForm=LoginForm(), signupForm=signupForm)
