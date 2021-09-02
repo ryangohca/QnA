@@ -6,12 +6,13 @@ import logging
 from collections import namedtuple
 
 from flask import render_template, request, flash, url_for, redirect, make_response, session, jsonify
+from flask_login import login_required, login_user, logout_user
 from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
 
-from QnA import app, db, sess
-from QnA.models import DocumentUploads, Pages, ExtractedImages
+from QnA import app, db, sess, login
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages
 from QnA.forms import LoginForm, SignupForm
 
 logging.basicConfig(level=logging.DEBUG)
@@ -43,8 +44,21 @@ def saveAnnotationsToSession(data):
     canvasID = list(data.keys())[1] #first key is always '_currDocumentID'
     annotations = data[canvasID]["annotations"]
     session['edit']['curAnnotations'][canvasID] = annotations
-    
+
+def loginUser(username, remember_me):
+    user = Users.query.filter_by(username=username).first()
+    login_user(user, remember=remember_me)
+    next_page = request.args.get("next")
+    if not next_page or url_parse(next_page).netloc != "":
+        next_page = url_for('home', _scheme="https", _external=True)
+    return redirect(next_page)
+      
+@login.unauthorized_handler
+def unauthorised():
+    return redirect(url_for('root', _scheme="https", _external=True))
+
 @app.route("/tag", methods=["GET", "POST"])
+@login_required
 def tag():
     images = request.args.get("croppedImages")
     documentID = request.args.get("documentID")
@@ -59,12 +73,14 @@ def tag():
     return render_template("tag.html", images=images, documentID=documentID, pageNum=session['tag']['pageNum'])
   
 @app.route("/saveTaggedData", methods=["GET", "POST"])
+@login_required
 def saveTaggedData():
     data = request.form
     print("Received: ", data["question"], data["topic"])
     return redirect(url_for('tag', documentID=session['tag']['documentID'], croppedImages=json.dumps(session['tag']['croppedImages'])))
     
 @app.route("/edit", methods=["POST", "GET"])
+@login_required
 def editor():
     if request.method == "POST":
         scriptDir = os.path.dirname(__file__)
@@ -121,6 +137,7 @@ def editor():
                                            annotations = session['edit']['curAnnotations'])
 
 @app.route("/nextPage", methods=["POST"])
+@login_required
 def nextPage():
     if (session['edit']['curPageNum'] < len(session['edit']['curDoc'][1])):
         data = json.loads(list(request.form)[0])
@@ -129,6 +146,7 @@ def nextPage():
     return redirect(url_for("editor", document=json.dumps(session['edit']['curDoc'])))
   
 @app.route("/prevPage", methods=["POST"])
+@login_required
 def prevPage():
     if (session['curPageNum'] > 1):
         data = json.loads(list(request.form)[0])
@@ -137,18 +155,21 @@ def prevPage():
     return redirect(url_for("editor", document=json.dumps(session['curDoc'])))
 
 @app.route("/nextImage", methods=["POST"])
+@login_required
 def nextImage():
     if (session['tag']['pageNum'] + 1 < len(session['tag']['croppedImages'])):
         session['tag']['pageNum'] += 1
     return redirect(url_for("tag", croppedImages=json.dumps(session['tag']['croppedImages']), documentID=session['tag']['documentID'], _scheme="https", _external=True))
 
 @app.route("/prevImage", methods=["POST"])
+@login_required
 def prevImage():
     if (session['tag']['pageNum'] > 0):
         session['tag']['pageNum'] -= 1
     return redirect(url_for("tag", croppedImages=json.dumps(session['tag']['croppedImages']), documentID=session['tag']['documentID'], _scheme="https", _external=True))
 
 @app.route("/uploadFiles", methods=["POST"])
+@login_required
 def uploadFiles():
     files = request.files.getlist('filepicker')
     for file in files:
@@ -168,6 +189,7 @@ def uploadFiles():
     return redirect(url_for("manage", _scheme="https", _external=True))
 
 @app.route("/manage", methods=["GET", "POST"])
+@login_required
 def manage():
     allDocuments = DocumentUploads.query.all()
     completed = []
@@ -187,6 +209,7 @@ def manage():
     return render_template("manage.html", completed=completed, uncompleted=uncompleted)
 
 @app.route("/redirectEdit", methods=["GET", "POST"])
+@login_required
 def redirectEdit():
     if request.method == "POST":
         data = json.loads(list(request.form)[0])
@@ -223,13 +246,11 @@ def redirectEdit():
 
 @app.route("/logout")
 def logout():
-    return redirect(url_for("root"))
-  
-@app.route("/login")
-def login():
-    return redirect(url_for('home'))
+    logout_user()
+    return redirect(url_for("root", _scheme="https", _external=True))
   
 @app.route("/home")
+@login_required
 def home():
     return render_template("home.html")
     
@@ -238,19 +259,17 @@ def root():
     if request.method == "POST":
         if request.form['formName'] == 'signup':
             signupForm = SignupForm(request.form)
-            if signupForm.validate():
-                print(request.form)
-                return redirect(url_for('home'))
+            if signupForm.validate_on_submit():
+                return loginUser(signupForm.username.data.strip(), signupForm.remember_me.data)
             else:
                 return render_template("index.html", loginForm=LoginForm(), signupForm=signupForm)
         elif request.form['formName'] == 'login':
             loginForm = LoginForm(request.form)
-            if loginForm.validate():
-                print(request.form)
-                return redirect(url_for('home'))
+            if loginForm.validate_on_submit():
+                return loginUser(loginForm.username.data.strip(), loginForm.remember_me.data)
             else:
                 return render_template("index.html", loginForm=loginForm, signupForm=SignupForm())
+        else:
+            print("Shouldn't be here.")
     else:
-        login = LoginForm()
-        signup = SignupForm()
-        return render_template("index.html", loginForm=login, signupForm=signup)
+        return render_template("index.html", loginForm=LoginForm(), signupForm=SignupForm())
