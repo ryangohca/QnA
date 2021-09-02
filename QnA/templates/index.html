@@ -58,7 +58,7 @@
     </div>
     <div id="loginformdiv" class="form-group"> 
         <h3 class="text-center"> Sign In </h3>
-        <form action="{{ url_for('login') }}" method="POST" id="loginForm" class="container">
+        <form action="{{ url_for('root') }}" method="POST" id="loginForm" class="container">
             {{ render_field(loginForm.username) }}
             {{ render_field(loginForm.password) }}
             {{ render_field(loginForm.remember_me) }}
@@ -69,7 +69,7 @@
         <h4 class="text-center" id="orseparator"> OR </h4>
         <hr>
         <h3 class="text-center"> Register </h3>
-        <form action="{{ url_for('signUp') }}" method="POST" id="signupForm" class="container">
+        <form action="{{ url_for('root') }}" method="POST" id="signupForm" class="container">
             {{ render_field(signupForm.username) }}
             {{ render_field(signupForm.password) }}
             {{ render_field(signupForm.confirm) }}

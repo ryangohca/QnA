@@ -229,22 +229,28 @@ def logout():
 def login():
     return redirect(url_for('home'))
   
-@app.route("/signUp", methods=["POST"])
-def signUp():
-    signupForm = SignupForm(request.form)
-    if request.method == 'POST':
-        if signupForm.validate_on_submit():
-            print(request.form)
-        else:
-            return render_template("index.html", loginForm=LoginForm(), signupForm=signupForm)
-    return redirect(url_for('home'))
-  
 @app.route("/home")
 def home():
-    return render_template("main.html")
+    return render_template("home.html")
     
-@app.route("/", methods=["GET"])
+@app.route("/", methods=["GET", "POST"])
 def root():
-    login = LoginForm()
-    signup = SignupForm()
-    return render_template("index.html", loginForm=login, signupForm=signup)
+    if request.method == "POST":
+        if request.form['formName'] == 'signup':
+            signupForm = SignupForm(request.form)
+            if signupForm.validate():
+                print(request.form)
+                return redirect(url_for('home'))
+            else:
+                return render_template("index.html", loginForm=LoginForm(), signupForm=signupForm)
+        elif request.form['formName'] == 'login':
+            loginForm = LoginForm(request.form)
+            if loginForm.validate():
+                print(request.form)
+                return redirect(url_for('home'))
+            else:
+                return render_template("index.html", loginForm=loginForm, signupForm=SignupForm())
+    else:
+        login = LoginForm()
+        signup = SignupForm()
+        return render_template("index.html", loginForm=login, signupForm=signup)
