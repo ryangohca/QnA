@@ -236,7 +236,7 @@ def signUp():
         if signupForm.validate_on_submit():
             print(request.form)
         else:
-            return redirect(url_for('root', signup=signupForm))
+            return render_template("index.html", loginForm=LoginForm(), signupForm=signupForm)
     return redirect(url_for('home'))
   
 @app.route("/home")
@@ -245,13 +245,6 @@ def home():
     
 @app.route("/", methods=["GET"])
 def root():
-    login = request.args.get("login")
-    if login is None:
-        login = LoginForm()
-    
-    signup = request.args.get("signup")
-    if signup is None:
-        signup = SignupForm()
-     
-    print(isinstance(signup, SignupForm))
+    login = LoginForm()
+    signup = SignupForm()
     return render_template("index.html", loginForm=login, signupForm=signup)
