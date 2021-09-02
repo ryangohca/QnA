@@ -52,7 +52,7 @@ class SignupForm(FlaskForm):
             validated = False 
         
         if form.username.data in password:
-            form.name.errors.append("Password must not contain username.")
+            form.password.errors.append("Password must not contain username.")
             validated = False
             
         return validated
