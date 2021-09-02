@@ -2,9 +2,11 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
+from flask_sslify import SSLify
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = "chuucandoitificandoit"
 app.config['EXTRACTED'] = 'static/extracted'
 app.config['UPLOAD'] = 'static/upload'
@@ -43,7 +45,8 @@ Session object stores:
 '''
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
+#sslify = SSLify(app)
 
 
 from QnA import views, models
-from QnA import clean
+#from QnA import clean

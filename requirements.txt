@@ -3,6 +3,8 @@ Flask-SQLAlchemy
 Flask-Bootstrap
 Flask-Session
 Flask-WTF
+Flask-SSLify
+pyopenssl
 Pillow
 PyMuPDF
 docx2pdf
