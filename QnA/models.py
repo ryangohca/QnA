@@ -1,5 +1,7 @@
-from QnA import db
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from QnA import db, login
 
 class DocumentUploads(db.Model):
     __tablename__ = 'documentUploads'
@@ -10,7 +12,7 @@ class DocumentUploads(db.Model):
     percentageCompleted = db.Column(db.Integer, server_default=db.text('0'))
     pages = db.relationship('Pages', backref='documentUploads', lazy=True)
     
-class Users(db.Model):
+class Users(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -22,7 +24,7 @@ class Users(db.Model):
         
     def check_password(self, password):
         return check_password_hash(self.password, password)
-    
+
 class Pages(db.Model):
     __tablename__ = 'pages'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -59,6 +61,10 @@ class Answers(db.Model):
     answerText = db.Column(db.String(256), nullable=True)
     questionNo = db.Column(db.Integer, nullable=True)
     questionPart = db.Column(db.String(5), nullable=True)
+  
+@login.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
   
 def insert_dummy_user():
     dummy = Users(username='admin')

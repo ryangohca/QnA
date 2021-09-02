@@ -7,35 +7,43 @@ from wtforms.validators import ValidationError, DataRequired, EqualTo, Length
 from QnA.models import Users
 
 def userExists(form, field):
-    username = field.data
+    username = field.data.strip()
     return len(Users.query.filter_by(username=username).all()) != 0
   
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    formName = HiddenField(default="login")
-    remember_me = BooleanField('Remember Me')
+    username = StringField('Username', id="login-username", validators=[DataRequired()])
+    password = PasswordField('Password', id="login-password", validators=[DataRequired()])
+    remember_me = BooleanField('Remember Me', id="login-remember_me")
+    
+    formName = HiddenField(default="login", id="login-formName")
     
     def validate_username(form, field):
         if not userExists(form, field):
             raise ValidationError("Username does not exist in server.")
+        return True
             
     def validate_password(form, field):
-        user = Users.query.filter_by(username=form.username.data).first()
+        user = Users.query.filter_by(username=form.username.data.strip()).first()
+        if user is None:
+            # validate_password still runs even if username does not exist.
+            # We just suppress this validation
+            return False
         if not user.check_password(field.data):
             raise ValidationError("Password is incorrect.")
+        return True
             
 class SignupForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired(), Length(6, 24, "Password must be between 6 to 24 characters long.")])
-    confirm = PasswordField('Confirm Password', validators=[
-        EqualTo("password", "Passwords do not match!")
-    ])
-    formName = HiddenField(default='signup')
+    username = StringField('Username', id="signup-username", validators=[DataRequired()])
+    password = PasswordField('Password', id="signup-password", validators=[DataRequired(), Length(6, 24, "Password must be between 6 to 24 characters long.")])
+    confirm = PasswordField('Confirm Password', id="signup-confirm", validators=[EqualTo("password", "Passwords do not match!")])
+    remember_me = BooleanField('Remember Me', id="signup-remember_me")
+    
+    formName = HiddenField(default='signup', id="signup-formName")
     
     def validate_username(form, field):
         if userExists(form, field):
             raise ValidationError("Username already exists in server.")
+        return True
             
     def validate_password(form, field):
         validated = True
