@@ -27,7 +27,7 @@ class LoginForm(FlaskForm):
             
 class SignupForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired(), Length(6, -1, "Password must be at least 6 characters long.")])
+    password = PasswordField('Password', validators=[DataRequired(), Length(6, 24, "Password must be between 6 to 24 characters long.")])
     confirm = PasswordField('Confirm Password', validators=[
         EqualTo("password", "Passwords do not match!")
     ])
@@ -53,7 +53,7 @@ class SignupForm(FlaskForm):
             form.password.errors.append("Password must have at least 1 lowercase character.")
             validated = False 
         
-        if form.username.data in password:
+        if form.username.data.lower() in password.lower():
             form.password.errors.append("Password must not contain username.")
             validated = False
             
