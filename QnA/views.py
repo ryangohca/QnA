@@ -279,6 +279,7 @@ def root():
     if current_user.is_authenticated:
         return redirect(url_for('home', _scheme="https", _external=True))
     if request.method == "POST":
+        print(request.form)
         if request.form['formName'] == 'signup':
             signupForm = SignupForm(request.form)
             if signupForm.validate_on_submit():
@@ -288,14 +289,14 @@ def root():
                 db.session.commit()
                 return loginUser(signupForm.username.data.strip(), signupForm.remember_me.data)
             else:
-                return render_template("index.html", loginForm=LoginForm(), signupForm=signupForm)
+                return render_template("index.html", loginForm=LoginForm(formdata=None), signupForm=signupForm)
         elif request.form['formName'] == 'login':
             loginForm = LoginForm(request.form)
             if loginForm.validate_on_submit():
                 return loginUser(loginForm.username.data.strip(), loginForm.remember_me.data)
             else:
-                return render_template("index.html", loginForm=loginForm, signupForm=SignupForm())
+                return render_template("index.html", loginForm=loginForm, signupForm=SignupForm(formdata=None))
         else:
             print("Shouldn't be here.")
     else:
-        return render_template("index.html", loginForm=LoginForm(), signupForm=SignupForm())
+        return render_template("index.html", loginForm=LoginForm(formdata=None), signupForm=SignupForm(formdata=None))
