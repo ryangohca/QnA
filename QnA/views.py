@@ -61,6 +61,10 @@ def loginUser(username, remember_me):
 def unauthorised():
     return redirect(url_for('root', next=request.endpoint, _scheme="https", _external=True))
 
+@app.errorhandler(404)
+def notFound(e):
+    return render_template("404.html"), 404
+  
 @app.route("/tag", methods=["GET", "POST"])
 @login_required
 def tag():

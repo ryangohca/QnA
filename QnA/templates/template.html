@@ -30,10 +30,14 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-            <li class="nav-item active ms-2"><a class="nav-link" href="/home">Home</a></li>
-            <li class="nav-item ms-2"><a class="nav-link" href="/manage">Manage</a></li>
-            <li class="nav-item ms-2"><a class="nav-link" href="/account">Account</a></li>
-            <li class="nav-item ms-2"><a class="nav-link" href="/logout">Logout</a></li>
+            {% if current_user.is_authenticated %}
+                <li class="nav-item active ms-2"><a class="nav-link" href="/home">Home</a></li>
+                <li class="nav-item ms-2"><a class="nav-link" href="/manage">Manage</a></li>
+                <li class="nav-item ms-2"><a class="nav-link" href="/account">Account</a></li>
+                <li class="nav-item ms-2"><a class="nav-link" href="/logout">Logout</a></li>
+            {% else %}
+                <li class="nav-item ms-2"><a class="nav-link" href="/">Login</a></li>
+            {% endif %}
         </ul>
     </div>
 </nav>
