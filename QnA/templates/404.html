@@ -1,0 +1,17 @@
+{% extends "template.html" %}
+
+{% block title %} 404 Not Found {% endblock %}
+
+{% block content %}
+<h2 class="ms-2 mt-2"> Sorry, the resource does not exist. </h2>
+<p class="ms-2"> 
+    The requested resource is not found on this site. Click 
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('home')}}">here</a>
+    to return to home page.
+    {% else %}
+    <a href="{{ url_for('root')}}">here</a>
+    to return to login page.
+    {% endif %}
+</p>
+{% endblock %}
