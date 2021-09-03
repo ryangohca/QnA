@@ -6,10 +6,11 @@ import logging
 from collections import namedtuple
 
 from flask import render_template, request, flash, url_for, redirect, make_response, session, jsonify
-from flask_login import login_required, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
+from werkzeug.routing import BuildError
 
 from QnA import app, db, sess, login
 from QnA.models import Users, DocumentUploads, Pages, ExtractedImages
@@ -49,23 +50,24 @@ def loginUser(username, remember_me):
     user = Users.query.filter_by(username=username).first()
     login_user(user, remember=remember_me)
     next_page = request.args.get("next")
-    if not next_page or url_parse(next_page).netloc != "":
-        next_page = url_for('home', _scheme="https", _external=True)
-    return redirect(next_page)
+    if not next_page:
+        next_page = 'home'
+    try:
+        return redirect(url_for(next_page, _scheme="https", _external=True))
+    except BuildError: #User tries to manually key in next, but no defined route here
+        return redirect(url_for('home', _scheme="https", _external=True))
       
 @login.unauthorized_handler
 def unauthorised():
-    return redirect(url_for('root', _scheme="https", _external=True))
+    return redirect(url_for('root', next=request.endpoint, _scheme="https", _external=True))
 
 @app.route("/tag", methods=["GET", "POST"])
 @login_required
 def tag():
     images = request.args.get("croppedImages")
     documentID = request.args.get("documentID")
-    if images is None:
-        return "server error: 'croppedImages' not found", 500
-    if documentID is None:
-        return "server error: 'documentID' not found", 500
+    if images is None or documentID is None:
+        return redirect(url_for('manage', _scheme="https", _external=True))
     images = json.loads(images)
     logging.info(images)
     session['tag']['documentID'] = documentID
@@ -75,10 +77,13 @@ def tag():
 @app.route("/saveTaggedData", methods=["GET", "POST"])
 @login_required
 def saveTaggedData():
-    data = request.form
-    print("Received: ", data["question"], data["topic"])
-    return redirect(url_for('tag', documentID=session['tag']['documentID'], croppedImages=json.dumps(session['tag']['croppedImages'])))
-    
+    if request.method == "POST":
+        data = request.form
+        print("Received: ", data["question"], data["topic"])
+        return redirect(url_for('tag', documentID=session['tag']['documentID'], croppedImages=json.dumps(session['tag']['croppedImages'])))
+    else:
+        return redirect(url_for('home', _scheme="https", _external=True))
+      
 @app.route("/edit", methods=["POST", "GET"])
 @login_required
 def editor():
@@ -131,67 +136,82 @@ def editor():
 
     document = request.args.get('document')
     if document is None:
-        return "server error: 'document' not found", 500
+        return redirect(url_for('manage', _scheme="https", _external=True))
     logging.info(session)
     return render_template("editor.html", document=json.loads(document), pageNum = session['edit']['curPageNum'], 
                                            annotations = session['edit']['curAnnotations'])
 
-@app.route("/nextPage", methods=["POST"])
+@app.route("/nextPage", methods=["GET", "POST"])
 @login_required
 def nextPage():
-    if (session['edit']['curPageNum'] < len(session['edit']['curDoc'][1])):
-        data = json.loads(list(request.form)[0])
-        saveAnnotationsToSession(data)
-        session['edit']['curPageNum'] += 1
-    return redirect(url_for("editor", document=json.dumps(session['edit']['curDoc'])))
+    if request.method == "POST":
+        if (session['edit']['curPageNum'] < len(session['edit']['curDoc'][1])):
+            data = json.loads(list(request.form)[0])
+            saveAnnotationsToSession(data)
+            session['edit']['curPageNum'] += 1
+        return redirect(url_for("editor", document=json.dumps(session['edit']['curDoc'])))
+    else:
+        return redirect(url_for("manage", _scheme="https", _external=True))
   
-@app.route("/prevPage", methods=["POST"])
+@app.route("/prevPage", methods=["GET", "POST"])
 @login_required
 def prevPage():
-    if (session['curPageNum'] > 1):
-        data = json.loads(list(request.form)[0])
-        saveAnnotationsToSession(data)
-        session['curPageNum'] -= 1
-    return redirect(url_for("editor", document=json.dumps(session['curDoc'])))
+    if request.method == "POST":
+        if (session['edit']['curPageNum'] > 1):
+            data = json.loads(list(request.form)[0])
+            saveAnnotationsToSession(data)
+            session['edit']['curPageNum'] -= 1
+        return redirect(url_for("editor", document=json.dumps(session['edit']['curDoc'])))
+    else:
+        return redirect(url_for("home", _scheme="https", _external=True))
 
-@app.route("/nextImage", methods=["POST"])
+@app.route("/nextImage", methods=["GET", "POST"])
 @login_required
 def nextImage():
-    if (session['tag']['pageNum'] + 1 < len(session['tag']['croppedImages'])):
-        session['tag']['pageNum'] += 1
-    return redirect(url_for("tag", croppedImages=json.dumps(session['tag']['croppedImages']), documentID=session['tag']['documentID'], _scheme="https", _external=True))
-
-@app.route("/prevImage", methods=["POST"])
+    if request.method == "POST":
+        if (session['tag']['pageNum'] + 1 < len(session['tag']['croppedImages'])):
+            session['tag']['pageNum'] += 1
+        return redirect(url_for("tag", croppedImages=json.dumps(session['tag']['croppedImages']), documentID=session['tag']['documentID'], _scheme="https", _external=True))
+    else:
+        return redirect(url_for('home', _scheme="https", _external=True))
+      
+@app.route("/prevImage", methods=["GET", "POST"])
 @login_required
 def prevImage():
-    if (session['tag']['pageNum'] > 0):
-        session['tag']['pageNum'] -= 1
-    return redirect(url_for("tag", croppedImages=json.dumps(session['tag']['croppedImages']), documentID=session['tag']['documentID'], _scheme="https", _external=True))
-
-@app.route("/uploadFiles", methods=["POST"])
+    if request.method == "POST":
+        if (session['tag']['pageNum'] > 0):
+            session['tag']['pageNum'] -= 1
+        return redirect(url_for("tag", croppedImages=json.dumps(session['tag']['croppedImages']), documentID=session['tag']['documentID'], _scheme="https", _external=True))
+    else:
+        return redirect(url_for('home', _scheme="https", _external=True))
+      
+@app.route("/uploadFiles", methods=["GET", "POST"])
 @login_required
 def uploadFiles():
-    files = request.files.getlist('filepicker')
-    for file in files:
-        originalName, ext = file.filename.split('.')
-        newName = generateRandomName()
-        filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], newName + '.' + ext)
-        file.save(filePath)
-        if ext == 'doc' or ext == 'docx':
-           newPath = filePath.replace('.' + ext, ".pdf")
-           convert(filePath, newPath)
-           filePath = newPath
-        document = DocumentUploads(userID=1, originalName=file.filename, databaseName=newName + '.pdf')
-        db.session.add(document)
-        db.session.commit()
-        extractPdfPages(filePath, documentID=document.id)
-    
-    return redirect(url_for("manage", _scheme="https", _external=True))
+    if request.method == "POST":
+        files = request.files.getlist('filepicker')
+        for file in files:
+            originalName, ext = file.filename.split('.')
+            newName = generateRandomName()
+            filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], newName + '.' + ext)
+            file.save(filePath)
+            if ext == 'doc' or ext == 'docx':
+               newPath = filePath.replace('.' + ext, ".pdf")
+               convert(filePath, newPath)
+               filePath = newPath
+            document = DocumentUploads(userID=current_user.id, originalName=file.filename, databaseName=newName + '.pdf')
+            db.session.add(document)
+            db.session.commit()
+            extractPdfPages(filePath, documentID=document.id)
+
+        return redirect(url_for("manage", _scheme="https", _external=True))
+    else:
+        return redirect(url_for("home", _scheme="https", _external=True))
 
 @app.route("/manage", methods=["GET", "POST"])
 @login_required
 def manage():
-    allDocuments = DocumentUploads.query.all()
+    allDocuments = DocumentUploads.query.filter_by(userID=current_user.id).all()
     completed = []
     uncompleted = []
     for document in allDocuments:
@@ -217,8 +237,8 @@ def redirectEdit():
         allPages = Pages.query.filter_by(documentID=data['documentID']).all()
         essentialPagesInfo = [(page.id, page.pageNo, page.databaseName) for page in allPages]
         document = [thisDocumentObj.originalName, essentialPagesInfo, thisDocumentObj.id]
-        for key in list(session.keys()):
-            session.pop(key)
+        #for key in list(session.keys()):
+        #    session.pop(key)
         session['edit'] = {}
         session['edit']['curDoc'] = document
         session['edit']['curPageNum'] = 1
@@ -241,7 +261,7 @@ def redirectEdit():
         return redirect(url_for("editor", document=json.dumps(session['edit']['curDoc']),
                                           annotations=session['edit']['curAnnotations']))
     else:
-        return "Unauthorised Access", 503
+        return redirect(url_for("manage", _scheme="https", _external=True))
       
 
 @app.route("/logout")
@@ -256,6 +276,8 @@ def home():
     
 @app.route("/", methods=["GET", "POST"])
 def root():
+    if current_user.is_authenticated:
+        return redirect(url_for('home', _scheme="https", _external=True))
     if request.method == "POST":
         if request.form['formName'] == 'signup':
             signupForm = SignupForm(request.form)

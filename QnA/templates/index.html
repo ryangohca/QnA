@@ -58,7 +58,7 @@
     </div>
     <div id="loginformdiv" class="form-group"> 
         <h3 class="text-center mt-2"> Sign In </h3>
-        <form action="{{ url_for('root') }}" method="POST" id="loginForm" class="container">
+        <form method="POST" id="loginForm" class="container">
             {{ loginForm.hidden_tag() }}
           
             {{ render_field(loginForm.username) }}
@@ -70,7 +70,7 @@
         <h4 class="text-center" id="orseparator"> OR </h4>
         <hr>
         <h3 class="text-center"> Register </h3>
-        <form action="{{ url_for('root') }}" method="POST" id="signupForm" class="container">
+        <form method="POST" id="signupForm" class="container">
             {{ signupForm.hidden_tag() }}
           
             {{ render_field(signupForm.username) }}
