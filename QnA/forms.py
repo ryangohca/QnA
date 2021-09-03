@@ -49,10 +49,14 @@ class SignupForm(FlaskForm):
         validated = True
         
         password = field.data
-        if not any(char in set(string.punctuation + string.digits) for char in password):
-            form.password.errors.append("Password must have at least 1 special character (punctuation or number).")
+        if not any(char in string.digits for char in password):
+            form.password.errors.append("Password must have at least 1 number.")
             validated = False
             
+        if not any(char in set(string.punctuation) for char in password):
+            form.password.errors.append("Password must have at least 1 punctuation.")
+            validated = False
+
         if not any(char in string.ascii_uppercase for char in password):
             form.password.errors.append("Password must have at least 1 uppercase character.")
             validated = False

@@ -1,8 +1,9 @@
 {% extends "bootstrap/base.html" %}
 
 {% block head %}
-{{super()}}
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="REFRESH" content="csrf_timeout_in_seconds">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    {{ super() }}
 {% endblock %}
 
 {% block styles %}
