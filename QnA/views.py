@@ -270,7 +270,6 @@ def redirectEdit():
     else:
         return redirect(url_for("manage", _scheme="https", _external=True))
       
-
 @app.route("/logout")
 def logout():
     logout_user()

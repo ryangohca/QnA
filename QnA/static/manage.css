@@ -1,28 +1,28 @@
-.previewImage{
-    width:auto; 
-    height:100px;
+.previewImage {
+    width: auto;
+    height: 100px;
 }
 
-.previewImageContainer{
+.previewImageContainer {
     float: left;
 }
 
-.otherContent{
+.otherContent {
     float: none;
     overflow: hidden;
-    height:100%;
+    height: 100%;
 }
 
-.percentageProgressBar{
+.percentageProgressBar {
     min-width: 2em;
 }
 
-#problemPage > div{
+#problemPage > div {
     width: 75%;
 }
 
-@media only screen and (max-width: 500px){
-    #problemPage > div{
+@media only screen and (max-width: 500px) {
+    #problemPage > div {
         width: 100%;
     }
 }
