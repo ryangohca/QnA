@@ -54,4 +54,4 @@ login.login_message = "Please login to continue."
 login.login_message_category = "danger"
 
 from QnA import views, models
-#from QnA import clean
+# from QnA import clean

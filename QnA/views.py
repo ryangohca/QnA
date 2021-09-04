@@ -46,6 +46,9 @@ def saveAnnotationsToSession(data):
     annotations = data[canvasID]["annotations"]
     session['edit']['curAnnotations'][canvasID] = annotations
 
+def clearSession(key):
+    session.pop(key)
+
 def loginUser(username, remember_me):
     user = Users.query.filter_by(username=username).first()
     login_user(user, remember=remember_me)
@@ -133,7 +136,7 @@ def editor():
                     db.session.add(extractedImage)
                     db.session.commit()
                     croppedImages.append((extractedImage.id, randomName))
-        
+        clearSession('edit')
         session['tag'] = {}
         session['tag']['pageNum'] = 0
         return redirect(url_for('tag', croppedImages=json.dumps(croppedImages), documentID=documentID))
