@@ -3,10 +3,12 @@
 .files input {
     padding: 120px 0px 85px 35%;
 }
-.files { 
-    position:relative
+
+.files {
+    position: relative;
 }
-.files:after {  
+
+.files:after {
     pointer-events: none;
     position: absolute;
     top: 60px;
@@ -20,6 +22,7 @@
     background-size: 100%;
     background-repeat: no-repeat;
 }
+
 .files:before {
     position: absolute;
     bottom: 20px;
