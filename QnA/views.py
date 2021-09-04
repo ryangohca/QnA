@@ -139,6 +139,7 @@ def editor():
         clearSession('edit')
         session['tag'] = {}
         session['tag']['pageNum'] = 0
+        croppedImages.sort(key=lambda item: ExtractedImages.query.filter_by(id=item[0]).first().topY)
         return redirect(url_for('tag', croppedImages=json.dumps(croppedImages), documentID=documentID))
 
     document = request.args.get('document')
@@ -210,7 +211,6 @@ def uploadFiles():
             db.session.add(document)
             db.session.commit()
             extractPdfPages(filePath, documentID=document.id)
-
         return redirect(url_for("manage", _scheme="https", _external=True))
     else:
         return redirect(url_for("home", _scheme="https", _external=True))
