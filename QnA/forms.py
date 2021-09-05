@@ -88,6 +88,7 @@ class TagForm(FlaskForm):
     questionNo = IntegerField('Question Number', id="tag-qnNo", validators=[NumberRange(min=1, message='Question Number must be positive!')])
     questionPart = StringField('Part', id="tag-qnPart")
     questionDocument = SelectField('Question From:', id="tag-questionDoc", coerce=True)
+    answer = StringField('Answer (leave blank if not in text):', id="tag-qnAns")
     
     def __init__(self, *args, **kwargs):
         if 'documentID' not in kwargs:

@@ -11,6 +11,7 @@ class DocumentUploads(db.Model):
     databaseName = db.Column(db.String(110), nullable=False)
     percentageCompleted = db.Column(db.Integer, server_default=db.text('0'))
     pages = db.relationship('Pages', backref='documentUploads', lazy=True)
+    answersToQns = db.relationship('Answers', backref='documentUploads', lazy=True)
     
 class Users(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -59,6 +60,7 @@ class Answers(db.Model):
     __tablename__ = 'answers'
     id = db.Column(db.Integer, db.ForeignKey('extractedImages.id'), primary_key=True, autoincrement=False)
     answerText = db.Column(db.String(256), nullable=True)
+    questionDocumentID = db.Column(db.Integer, db.ForeignKey('documentUploads.id'), nullable=True)
     questionNo = db.Column(db.Integer, nullable=True)
     questionPart = db.Column(db.String(5), nullable=True)
   
