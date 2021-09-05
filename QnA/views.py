@@ -14,7 +14,7 @@ from werkzeug.routing import BuildError
 
 from QnA import app, db, sess, login
 from QnA.models import Users, DocumentUploads, Pages, ExtractedImages
-from QnA.forms import LoginForm, SignupForm
+from QnA.forms import LoginForm, SignupForm, TagForm
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -79,7 +79,8 @@ def tag():
     logging.info(images)
     session['tag']['documentID'] = documentID
     session['tag']['croppedImages'] = images
-    return render_template("tag.html", images=images, documentID=documentID, pageNum=session['tag']['pageNum'])
+    tagform = TagForm(documentID=documentID)
+    return render_template("tag.html", images=images, documentID=documentID, pageNum=session['tag']['pageNum'], form=tagform)
   
 @app.route("/saveTaggedData", methods=["GET", "POST"])
 @login_required
@@ -136,10 +137,10 @@ def editor():
                     db.session.add(extractedImage)
                     db.session.commit()
                     croppedImages.append((extractedImage.id, randomName))
-        clearSession('edit')
+        clearSession('edit') 
         session['tag'] = {}
         session['tag']['pageNum'] = 0
-        croppedImages.sort(key=lambda item: ExtractedImages.query.filter_by(id=item[0]).first().topY)
+        croppedImages.sort(key=lambda item: (Pages.query.filter_by(id=ExtractedImages.query.filter_by(id=item[0]).first().pageID).first().pageNo, ExtractedImages.query.filter_by(id=item[0]).first().topY))
         return redirect(url_for('tag', croppedImages=json.dumps(croppedImages), documentID=documentID))
 
     document = request.args.get('document')
@@ -278,6 +279,7 @@ def logout():
 @app.route("/home")
 @login_required
 def home():
+    print(session)
     return render_template("home.html")
     
 @app.route("/", methods=["GET", "POST"])

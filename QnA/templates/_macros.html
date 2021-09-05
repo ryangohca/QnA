@@ -1,0 +1,28 @@
+{% macro render_field(field) %}
+    <div>
+        {% if field.type != "HiddenField" %}
+            {{ field.label(class_="form-check-label") }}
+        {% endif %}
+      
+        {# following input autocomplete guides #}
+        {% if field.id == "signup-password" or field.id == "signup-confirm" %}
+            {{ field(class_="form-control border", autocomplete="new-password", **kwargs)|safe }}
+        {% elif field.id == "login-password" %}
+            {{ field(class_="form-control border", autocomplete="current-password", **kwargs)|safe }}
+        {% elif field.name == "username" %}
+            {{ field(class_="form-control border", autocomplete="username", **kwargs)|safe }}
+        {% elif field.type == "BooleanField" %}
+            {{ field(class_="form-check-input border", **kwargs)|safe }}
+        {% else %}
+            {{ field(class_="form-control border", **kwargs)|safe }}
+        {% endif %}
+      
+        {% if field.errors %}
+        <ul class=errors>
+            {% for error in field.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+{% endmacro %}

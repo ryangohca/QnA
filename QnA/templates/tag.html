@@ -1,35 +1,32 @@
 {% extends "template.html" %}
+{% from "_macros.html" import render_field with context %}
 
 {% block title %} Tag {% endblock %}
 
 {% block otherScripts %}
 <script src="{{ url_for('static', filename='redirects.js') }}"></script>
+<script src="{{ url_for('static', filename='tag.js') }}"></script>
 {% endblock %}
 
 {% block content %}
-{% for i in range(images|length) %}
-    {% set imageDir = "static/extracted/" + images[i][1] %}
-    {% if i == pageNum %}
-        <div class="container">
-            <img src="{{imageDir}}", id="image-{{images[i][0]|string}}", alt="image-{{images[i][0]|string}}.png">
-            <p>Extracted Image {{i + 1}}</p>
-            <form method="POST" action="/saveTaggedData" enctype="multipart/form-data">
-                <div class="row mb-3">
-                    <label for="imageType">Type:</label>  
-                    <select class="form-select" name="imageType" required>
-                        <option value="question">Question Statement</option>  
-                        <option value="answer">Answer</option>
-                    </select>    
-                    <label for="imageTopic">Topic:</label>
-                    <input type="text" name="imageTopic">
-                </div>
-                <div>
-                    <button class="btn btn-primary" type="submit">Confirm</button>
-                </div>
-            </form>
-        </div>  
-    {% endif %}
-{% endfor %}
+{% set imageDir = "static/extracted/" + images[pageNum][1] %}
+<div class="container">
+    <img src="{{imageDir}}", id="image-{{images[pageNum][0]|string}}", alt="image-{{images[pageNum][0]|string}}.png">
+    <p>Extracted Image {{pageNum + 1}}</p>
+
+    <form method="POST" action="/saveTaggedData" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ render_field(form.imageType) }}
+        {{ render_field(form.subject) }}
+        {{ render_field(form.topic) }}
+        {{ render_field(form.year) }}
+        {{ render_field(form.paper) }}
+        {{ render_field(form.questionNo) }}
+        {{ render_field(form.questionPart) }}
+        {{ render_field(form.questionDocument) }}
+        <button type="submit" class="btn btn-primary">Confirm</button>
+    </form>
+</div>  
 <form method="POST" action="/nextImage">
     <button type="submit" id="nextImage" class="btn btn-primary mt-2 float-end me-2"> Next </button>
 </form>
