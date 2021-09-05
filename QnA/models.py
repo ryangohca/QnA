@@ -2,6 +2,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from QnA import db, login
+from QnA.clean import clean_directories
 
 class DocumentUploads(db.Model):
     __tablename__ = 'documentUploads'
@@ -76,6 +77,7 @@ def insert_dummy_user():
     
 def refreshDb():
     db.drop_all()
+    clean_directories(False)
     db.create_all()
     insert_dummy_user()
     

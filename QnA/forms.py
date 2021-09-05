@@ -16,7 +16,7 @@ def getAllUploadDocuments(userID):
     allDocs = DocumentUploads.query.filter_by(userID=userID).all()
     selectChoices = []
     for doc in allDocs:
-        selectChoices.push_back((doc.id, doc.originalName))
+        selectChoices.append((doc.id, doc.originalName))
     return selectChoices
   
 class LoginForm(FlaskForm):
@@ -81,23 +81,29 @@ class SignupForm(FlaskForm):
         return validated
             
 class TagForm(FlaskForm):
-    imageType = SelectField('Type*', id="tag-imageType", choices=[('question', 'Question Statement'), ('answer', 'Answer')], default='question', validators=[InputRequired()])
-    topic = StringField('Topic', id="tag-topic")
-    year = IntegerField('Year', id='tag-year', validators=[NumberRange(min=1950, max=datetime.datetime.now().year, message='Invalid year: please enter a year between %(min)s and %(max)s.')])
-    paper = StringField('Paper', id='tag-paper')
-    questionNo = IntegerField('Question Number', id="tag-qnNo", validators=[NumberRange(min=1, message='Question Number must be positive!')])
-    questionPart = StringField('Part', id="tag-qnPart")
-    questionDocument = SelectField('Question From:', id="tag-questionDoc", coerce=True)
+    imageType = SelectField('Type*:', id="tag-imageType", choices=[('question', 'Question Statement'), ('answer', 'Answer')], default='question', validators=[InputRequired()])
+    subject = StringField('Subject*:', id="tag-title")
+    topic = StringField('Topic*:', id="tag-topic")
+    year = IntegerField('Year:', id='tag-year', validators=[NumberRange(min=1950, max=datetime.datetime.now().year, message='Invalid year: please enter a year between %(min)s and %(max)s.')])
+    paper = StringField('Paper:', id='tag-paper')
+    questionNo = IntegerField('Question Number*:', id="tag-qnNo", validators=[InputRequired(), NumberRange(min=1, message='Question Number must be positive!')])
+    questionPart = StringField('Part:', id="tag-qnPart")
+    questionDocument = SelectField('Question From:', id="tag-questionDoc", coerce=int, choices=[], default="")
     answer = StringField('Answer (leave blank if not in text):', id="tag-qnAns")
     
     def __init__(self, *args, **kwargs):
         if 'documentID' not in kwargs:
-            raise TypeError('Tagform() missing 1 required keyword-only argument: `documentID`.')
+            raise TypeError('TagForm() missing 1 required keyword-only argument: `documentID`.')
         super().__init__(*args, **kwargs)
-        questionDocument.choices = getAllUploadDocuments(current_user.id)
-        questionDocument.default = kwargs['documentID']
+        self.questionDocument.choices = getAllUploadDocuments(current_user.id)
+        self.questionDocument.default = kwargs['documentID']
         
     def validate_topic(form, field):
         if form.imageType.data == "question" and not field.data.strip():
             raise ValidationError("Topic is required.")
+        return True
+      
+    def validate_subject(form, field):
+        if form.imageType.data == "question" and not field.data.strip():
+            raise ValidationError("Subject is required.")
         return True
