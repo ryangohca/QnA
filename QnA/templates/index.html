@@ -33,9 +33,9 @@
         <form method="POST" id="loginForm" class="container">
             {{ loginForm.hidden_tag() }}
           
-            {{ render_field(loginForm.username) }}
-            {{ render_field(loginForm.password) }}
-            {{ render_field(loginForm.remember_me) }}
+            {{ render_field(loginForm.username, autocomplete="username") }}
+            {{ render_field(loginForm.password, autocomplete="current-password") }}
+            {{ render_field(loginForm.remember_me, class_="form-check-input border") }}
             <button type="submit" class="btn btn-primary mt-2 w-100"> Sign In </button>
         </form>
         <hr>
@@ -45,10 +45,10 @@
         <form method="POST" id="signupForm" class="container">
             {{ signupForm.hidden_tag() }}
           
-            {{ render_field(signupForm.username) }}
-            {{ render_field(signupForm.password) }}
-            {{ render_field(signupForm.confirm) }}
-            {{ render_field(signupForm.remember_me) }}
+            {{ render_field(signupForm.username, autocomplete="username") }}
+            {{ render_field(signupForm.password, autocomplete="new-password") }}
+            {{ render_field(signupForm.confirm, autocomplete="new-password") }}
+            {{ render_field(signupForm.remember_me, class_="form-check-input border") }}
             <button type="submit" class="btn btn-secondary mt-2 w-100"> Sign Up </button>
         </form>
     </div>
