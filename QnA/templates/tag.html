@@ -17,13 +17,13 @@
     <form method="POST" action="/saveTaggedData" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         {{ render_field(form.imageType, class_="form-select") }}
-        {{ render_field(form.subject) }}
-        {{ render_field(form.topic) }}
-        {{ render_field(form.year) }}
-        {{ render_field(form.paper) }}
+        {{ render_field(form.subject, classaddon="question") }}
+        {{ render_field(form.topic, classaddon="question") }}
+        {{ render_field(form.year, classaddon="question") }}
+        {{ render_field(form.paper, classaddon="question") }}
+        {{ render_field(form.questionDocument, class_="form-select answer") }}
         {{ render_field(form.questionNo) }}
         {{ render_field(form.questionPart) }}
-        {{ render_field(form.questionDocument, class_="form-select") }}
         <button type="submit" class="btn btn-primary">Confirm</button>
     </form>
 </div>  

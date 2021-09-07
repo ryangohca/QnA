@@ -1,17 +1,21 @@
-const cont = document.querySelector(".infoContainer");
-
-function checkOption(selectObject) {
-    var cur = selectObject.value
-    
-    // var questionHtml = `<label for="imageTopic">Topic:</label><input type="text" name="imageTopic">`;
-    // var answerHtml = `<label for="linkedQuestion">Question:</label><input type="text" name=linkedQuestion:">`;
-    var questionHTML = `<p>Hello</p>`
-    var answerHTML = `<p>World</p>`;
-    console.log(cont.innerHTML);
-    if (cur == "question") {
-        cont.setAttribute('innerHTML', questionHTML);
-    } else {    
-        cont.setAttribute('innerHTML', answerHTML);
-    }  
-    console.log(cont.innerHTML);
+function showForm(selectedType) {
+    for (let elem of document.getElementsByClassName('question')){
+        let visibility = ((selectedType === 'question') ? "block" : "none");
+        elem.style.display = visibility;
+        elem.labels[0].style.display = visibility;
+    }
+    for (let elem of document.getElementsByClassName('answer')){
+        let visibility = ((selectedType === 'answer') ? "block" : "none");
+        elem.style.display = visibility;
+        elem.labels[0].style.display = visibility;
+    }
 }
+
+ window.onload = function(){
+     let selectQnType = document.getElementById('tag-imageType');
+     showForm('question');
+     selectQnType.addEventListener("change", function(e){
+         let selectQnType = document.getElementById('tag-imageType');
+         showForm(selectQnType.value);
+     });
+ };
