@@ -4,18 +4,13 @@
             {{ field.label(class_="form-check-label") }}
         {% endif %}
       
-        {# following input autocomplete guides #}
-        {% if field.id == "signup-password" or field.id == "signup-confirm" %}
-            {{ field(class_="form-control border", autocomplete="new-password", **kwargs)|safe }}
-        {% elif field.id == "login-password" %}
-            {{ field(class_="form-control border", autocomplete="current-password", **kwargs)|safe }}
-        {% elif field.name == "username" %}
-            {{ field(class_="form-control border", autocomplete="username", **kwargs)|safe }}
-        {% elif field.type == "BooleanField" %}
-            {{ field(class_="form-check-input border", **kwargs)|safe }}
+        {% if "class_" in kwargs %}
+            {% set class_ = kwargs.pop('class_') %}
         {% else %}
-            {{ field(class_="form-control border", **kwargs)|safe }}
+            {% set class_ = "form-control border" %}
         {% endif %}
+      
+        {{ field(class_=class_, **kwargs)|safe }}
       
         {% if field.errors %}
         <ul class=errors>
