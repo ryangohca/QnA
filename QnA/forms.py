@@ -124,7 +124,6 @@ class TagForm(FlaskForm):
                 documentID = Pages.query.get(pageID).documentID
                 userID = DocumentUploads.query.get(documentID).userID
                 if userID == current_user.id:
-                    print(question.answer)
                     if question.answer is not None:
                         raise ValidationError('This question already has a corresponding answer. Did you mistype something?')
         # If questionType is question, we just need to check whether the following condition is True:

@@ -138,6 +138,7 @@ def tag():
                     currAnsRow.questionDocumentID=tagform.questionDocument.data 
                     currAnsRow.questionNo=tagform.questionNo.data
                     currAnsRow.questionPart=tagform.questionPart.data
+                    db.session.commit()
         allPaperTitles = getAllPaperTitles(current_user.id)
         return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
     
