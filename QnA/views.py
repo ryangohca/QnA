@@ -88,16 +88,26 @@ def notFound(e):
 def tag():
     if request.method == "POST":
         documentID=session['tag']['documentID']
-        tagform = TagForm(request.form, documentID=documentID)
         images=session['tag']['croppedImages']
         pageNum = session['tag']['pageNum']
+        currImageID = images[pageNum - 1][0]
+        tagform = TagForm(request.form, currImageID=currImageID)
         if tagform.validate_on_submit():
-            currImageID = images[pageNum - 1][0]
             if tagform.imageType.data == "question":
-                question = Question(id=currImageID, subject=tagform.subject.data, topic=tagform.topic.data, year=tagform.year.data,
-                                    paper=tagform.paper.data, questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data)
-                db.session.add(question)
-                db.session.commit()
+                currQnRow = Questions.query.get(currImageID)
+                if currQnRow is None:
+                    question = Questions(id=currImageID, subject=tagform.subject.data, topic=tagform.topic.data, year=tagform.year.data,
+                                        paper=tagform.paper.data, questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data)
+                    db.session.add(question)
+                    db.session.commit()
+                else:
+                    currQnRow.subject=tagform.subject.data
+                    currQnRow.topic=tagform.topic.data
+                    currQnRow.year=tagform.year.data
+                    currQnRow.paper=tagform.paper.data
+                    currQnRow.questionNo=tagform.questionNo.data
+                    currQnRow.questionPart=tagform.questionPart.data
+                    db.session.commit()
             elif tagform.imageType.data == "answer":
                 pass
         allPaperTitles = getAllPaperTitles(current_user.id)
@@ -111,9 +121,11 @@ def tag():
     logging.info(images)
     session['tag']['documentID'] = documentID
     session['tag']['croppedImages'] = images
-    tagform = TagForm(documentID=documentID)
+    pageNum = session['tag']['pageNum']
+    currImageID = images[pageNum - 1][0]
+    tagform = TagForm(currImageID=currImageID)
     allPaperTitles = getAllPaperTitles(current_user.id)
-    return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=session['tag']['pageNum'], form=tagform)
+    return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
 
       
 @app.route("/edit", methods=["POST", "GET"])
