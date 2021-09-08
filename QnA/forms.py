@@ -106,14 +106,26 @@ class TagForm(FlaskForm):
         # Firstly, reject any forms with a question part but no question number.
         if field.data is None and form.questionNo.data is not None:
             raise ValidationError("All question part must follow a valid question number.")
-        # If questionType is answer, we just need to check whether a corresponding qn exist.
+        # If questionType is answer, we just need to check whether the corresponding qn already has an answer.
         # However, we prioritise entry of data into database first, so if any of (year, paper, questionNo)
         # is missing, we just validate the form and throw whatever data inside.
         # In the case of answers, the answer would just be stored but inaccessible to users if it is not linked
         # to a qn.
         if form.imageType.data == "answer":
-            # We would need to implement dropdown list for papers before we can do this.
-            return True
+            if form.paperSelect.data == "none" or form.questionNo.data is None:
+                return True
+            year, paper = form.paperSelect.data.split('^%$')
+            if year == "noyear":
+                year = None
+            else:
+                year = int(year)
+            for question in Questions.query.filter_by(year=year, paper=form.paper.data, questionNo=form.questionNo.data, questionPart=form.questionPart.data).all():
+                pageID = ExtractedImages.query.get(question.id).pageID
+                documentID = Pages.query.get(pageID).documentID
+                userID = DocumentUploads.query.get(documentID).userID
+                if userID == current_user.id:
+                    if question.answer is not None:
+                        raise ValidationError('This question already has a corresponding answer. Did you mistype something?')
         # If questionType is question, we just need to check whether the following condition is True:
         #   There should be no 2 questions with the same (year, paper, questionNo, questionPart) for the same user.
         # Similarly, if data is not available for checking, we just throw data into database if possible.
@@ -123,7 +135,7 @@ class TagForm(FlaskForm):
             if form.paper.data is None or form.questionNo.data is None:
                 return True
             year = form.year.data
-            for question in Questions.query.filter_by(year=year, paper=form.paper.data.strip(), questionNo=form.questionNo.data, questionPart=form.questionPart.data.strip()).all():
+            for question in Questions.query.filter_by(year=year, paper=form.paper.data, questionNo=form.questionNo.data, questionPart=form.questionPart.data).all():
                 pageID = ExtractedImages.query.get(question.id).pageID
                 documentID = Pages.query.get(pageID).documentID
                 userID = DocumentUploads.query.get(documentID).userID

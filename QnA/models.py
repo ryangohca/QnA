@@ -47,6 +47,9 @@ class ExtractedImages(db.Model):
     question = db.relationship('Questions', uselist=False, backref='extractedImages')
     answer = db.relationship('Answers', uselist=False, backref='image')
     
+# The last 2 models accept null values as user may be unable to give ALL the information at one shot / have insufficient info
+# We try to store as much data is possible, even if majority of fields in a row are null.
+# This is because preventing loss of data > preserving db form
 class Questions(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, db.ForeignKey('extractedImages.id'), primary_key=True, autoincrement=False)
@@ -56,6 +59,7 @@ class Questions(db.Model):
     paper = db.Column(db.String(256), nullable=True)
     questionNo = db.Column(db.Integer, nullable=True)
     questionPart = db.Column(db.String(5), nullable=True)
+    answer = db.relationship('Answers', uselist=False, backref='questions')
     
 class Answers(db.Model):
     __tablename__ = 'answers'
@@ -64,6 +68,10 @@ class Answers(db.Model):
     questionDocumentID = db.Column(db.Integer, db.ForeignKey('documentUploads.id'), nullable=True)
     questionNo = db.Column(db.Integer, nullable=True)
     questionPart = db.Column(db.String(5), nullable=True)
+    # Previous 3 are to store info of a possible Question in the future 
+    # Used when data given is incomplete / we are unable to find a match in Questions table
+    # NOTE: Prefer `questionID` if it is defined.
+    questionID = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=True)
   
 @login.user_loader
 def load_user(user_id):

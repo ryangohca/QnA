@@ -13,7 +13,7 @@ function showForm(selectedType) {
 
 function setUpImageTypeSelect(){
     let selectQnType = document.getElementById('tag-imageType');
-    showForm('question');
+    showForm(selectQnType.value);
     selectQnType.addEventListener("change", function(e){
         let selectQnType = document.getElementById('tag-imageType');
         showForm(selectQnType.value);

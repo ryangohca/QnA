@@ -13,8 +13,13 @@ var allTitles = {};
 {% endfor %}
  window.onload = function(){
      setUpImageTypeSelect();
-     var selectedDoc = parseInt(document.getElementById('tag-questionDoc').value);
+     var qnDocSelect = document.getElementById('tag-questionDoc');
+     var selectedDoc = parseInt(qnDocSelect.value);
      setUpPaperSelect(allTitles[selectedDoc]);
+     qnDocSelect.addEventListener('change', function(e){
+         var qnDocSelect = document.getElementById('tag-questionDoc');
+         setUpPaperSelect(allTitles[parseInt(qnDocSelect.value)]);
+     });
  };
 </script>
 {% endblock %}
@@ -32,6 +37,7 @@ var allTitles = {};
         {{ render_field(form.topic, classaddon="question") }}
         {{ render_field(form.year, classaddon="question") }}
         {{ render_field(form.paper, classaddon="question") }}
+        {{ render_field(form.answer, classaddon="answer") }}
         {{ render_field(form.questionDocument, class_="form-select answer") }}
         {{ render_field(form.paperSelect, class_="form-select answer") }}
         {{ render_field(form.questionNo) }}

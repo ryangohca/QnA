@@ -87,11 +87,14 @@ def notFound(e):
 @login_required
 def tag():
     if request.method == "POST":
-        documentID=session['tag']['documentID']
-        images=session['tag']['croppedImages']
+        documentID = session['tag']['documentID']
+        images = session['tag']['croppedImages']
         pageNum = session['tag']['pageNum']
         currImageID = images[pageNum - 1][0]
         tagform = TagForm(request.form, currImageID=currImageID)
+        allTitles = getAllPaperTitles(current_user.id)
+        for choices in allTitles.values():
+            tagform.paperSelect.choices.extend([(str(year) + '^%$' + paper, 'dummy') for year, paper in choices])
         if tagform.validate_on_submit():
             if tagform.imageType.data == "question":
                 currQnRow = Questions.query.get(currImageID)
@@ -109,7 +112,32 @@ def tag():
                     currQnRow.questionPart=tagform.questionPart.data
                     db.session.commit()
             elif tagform.imageType.data == "answer":
-                pass
+                currAnsRow = Answers.query.get(currImageID)
+                if currAnsRow is None:
+                    qnID = None
+                    if tagform.paperSelect.data != "none" and tagform.questionNo.data is not None:
+                        qnYear, qnPaper = tagform.paperSelect.data.split('^%$')
+                        if qnYear == "noyear":
+                            qnYear = None
+                        else:
+                            qnYear = int(qnYear)
+                        possibleQnMatches = Questions.query.filter_by(year=qnYear, paper=qnPaper, questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data).all()
+                        for match in possibleQnMatches:
+                            pageID = ExtractedImages.query.get(match.id).pageID
+                            documentID = Pages.query.get(pageID).documentID
+                            userID = DocumentUploads.query.get(documentID).userID
+                            if userID == current_user.id:
+                                qnID = match.id
+                                break
+                    answer = Answers(id=currImageID, answerText=tagform.answer.data, questionDocumentID=tagform.questionDocument.data, 
+                                     questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data, questionID=qnID)
+                    db.session.add(answer)
+                    db.session.commit()
+                else:
+                    currAnsRow.answer = tagform.answer.data
+                    currAnsRow.questionDocumentID=tagform.questionDocument.data 
+                    currAnsRow.questionNo=tagform.questionNo.data
+                    currAnsRow.questionPart=tagform.questionPart.data
         allPaperTitles = getAllPaperTitles(current_user.id)
         return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
     
@@ -127,7 +155,6 @@ def tag():
     allPaperTitles = getAllPaperTitles(current_user.id)
     return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
 
-      
 @app.route("/edit", methods=["POST", "GET"])
 @login_required
 def editor():
@@ -281,8 +308,6 @@ def redirectEdit():
         allPages = Pages.query.filter_by(documentID=data['documentID']).all()
         essentialPagesInfo = [(page.id, page.pageNo, page.databaseName) for page in allPages]
         document = [thisDocumentObj.originalName, essentialPagesInfo, thisDocumentObj.id]
-        #for key in list(session.keys()):
-        #    session.pop(key)
         session['edit'] = {}
         session['edit']['curDoc'] = document
         session['edit']['curPageNum'] = 1
