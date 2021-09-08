@@ -114,31 +114,31 @@ def tag():
             elif tagform.imageType.data == "answer":
                 currAnsRow = Answers.query.get(currImageID)
                 if currAnsRow is None:
-                    qnID = None
-                    if tagform.paperSelect.data != "none" and tagform.questionNo.data is not None:
-                        qnYear, qnPaper = tagform.paperSelect.data.split('^%$')
-                        if qnYear == "noyear":
-                            qnYear = None
-                        else:
-                            qnYear = int(qnYear)
-                        possibleQnMatches = Questions.query.filter_by(year=qnYear, paper=qnPaper, questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data).all()
-                        for match in possibleQnMatches:
-                            pageID = ExtractedImages.query.get(match.id).pageID
-                            documentID = Pages.query.get(pageID).documentID
-                            userID = DocumentUploads.query.get(documentID).userID
-                            if userID == current_user.id:
-                                qnID = match.id
-                                break
-                    answer = Answers(id=currImageID, answerText=tagform.answer.data, questionDocumentID=tagform.questionDocument.data, 
-                                     questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data, questionID=qnID)
-                    db.session.add(answer)
-                    db.session.commit()
+                    currAnsRow = Answers(id=currImageID, answerText=tagform.answer.data, questionDocumentID=tagform.questionDocument.data, 
+                                     questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data)
+                    db.session.add(currAnsRow)
                 else:
                     currAnsRow.answer = tagform.answer.data
                     currAnsRow.questionDocumentID=tagform.questionDocument.data 
                     currAnsRow.questionNo=tagform.questionNo.data
                     currAnsRow.questionPart=tagform.questionPart.data
-                    db.session.commit()
+                qnID = None
+                if tagform.paperSelect.data != "none" and tagform.questionNo.data is not None:
+                    qnYear, qnPaper = tagform.paperSelect.data.split('^%$')
+                    if qnYear == "noyear":
+                        qnYear = None
+                    else:
+                        qnYear = int(qnYear)
+                    possibleQnMatches = Questions.query.filter_by(year=qnYear, paper=qnPaper, questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data).all()
+                    for match in possibleQnMatches:
+                        pageID = ExtractedImages.query.get(match.id).pageID
+                        documentID = Pages.query.get(pageID).documentID
+                        userID = DocumentUploads.query.get(documentID).userID
+                        if userID == current_user.id:
+                            qnID = match.id
+                            break
+                currAnsRow.questionID = qnID
+                db.session.commit()
         allPaperTitles = getAllPaperTitles(current_user.id)
         return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
     
