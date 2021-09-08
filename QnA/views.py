@@ -13,7 +13,7 @@ from docx2pdf import convert
 from werkzeug.routing import BuildError
 
 from QnA import app, db, sess, login
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers
 from QnA.forms import LoginForm, SignupForm, TagForm
 
 logging.basicConfig(level=logging.DEBUG)
@@ -60,6 +60,21 @@ def loginUser(username, remember_me):
     except BuildError: #User tries to manually key in next, but no defined route here
         return redirect(url_for('home', _scheme="https", _external=True))
       
+def getAllPaperTitles(currentUserID):
+    allTitles = {}
+    for question in Questions.query.all():
+        pageID = ExtractedImages.query.get(question.id).pageID
+        documentID = Pages.query.get(pageID).documentID
+        userID = DocumentUploads.query.get(documentID).userID
+        if userID == currentUserID:
+            if documentID not in allTitles:
+                allTitles[documentID] = set()
+            allTitles[documentID].add((question.year, question.paper))
+    for documentID in allTitles:
+        allTitles[documentID] = list(allTitles[documentID])
+    # Abuse json to convert tuples to lists (since Javascript don't support tuples)
+    return json.loads(json.dumps(allTitles))
+
 @login.unauthorized_handler
 def unauthorised():
     return redirect(url_for('root', next=request.endpoint, _scheme="https", _external=True))
@@ -71,6 +86,23 @@ def notFound(e):
 @app.route("/tag", methods=["GET", "POST"])
 @login_required
 def tag():
+    if request.method == "POST":
+        documentID=session['tag']['documentID']
+        tagform = TagForm(request.form, documentID=documentID)
+        images=session['tag']['croppedImages']
+        pageNum = session['tag']['pageNum']
+        if tagform.validate_on_submit():
+            currImageID = images[pageNum - 1][0]
+            if tagform.imageType.data == "question":
+                question = Question(id=currImageID, subject=tagform.subject.data, topic=tagform.topic.data, year=tagform.year.data,
+                                    paper=tagform.paper.data, questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data)
+                db.session.add(question)
+                db.session.commit()
+            elif tagform.imageType.data == "answer":
+                pass
+        allPaperTitles = getAllPaperTitles(current_user.id)
+        return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
+    
     images = request.args.get("croppedImages")
     documentID = request.args.get("documentID")
     if images is None or documentID is None:
@@ -80,17 +112,9 @@ def tag():
     session['tag']['documentID'] = documentID
     session['tag']['croppedImages'] = images
     tagform = TagForm(documentID=documentID)
-    return render_template("tag.html", images=images, documentID=documentID, pageNum=session['tag']['pageNum'], form=tagform)
-  
-@app.route("/saveTaggedData", methods=["GET", "POST"])
-@login_required
-def saveTaggedData():
-    if request.method == "POST":
-        data = request.form
-        print("Received: ", data["question"], data["topic"])
-        return redirect(url_for('tag', documentID=session['tag']['documentID'], croppedImages=json.dumps(session['tag']['croppedImages'])))
-    else:
-        return redirect(url_for('home', _scheme="https", _external=True))
+    allPaperTitles = getAllPaperTitles(current_user.id)
+    return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=session['tag']['pageNum'], form=tagform)
+
       
 @app.route("/edit", methods=["POST", "GET"])
 @login_required

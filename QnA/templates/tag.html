@@ -6,6 +6,12 @@
 {% block otherScripts %}
 <script src="{{ url_for('static', filename='redirects.js') }}"></script>
 <script src="{{ url_for('static', filename='tag.js') }}"></script>
+<script>
+var allTitles = {};
+{% for documentID in allPaperTitles %}
+    allTitles[{{ documentID }}] = {{ allPaperTitles[documentID] }};
+{% endfor %}
+</script>
 {% endblock %}
 
 {% block content %}
@@ -14,7 +20,7 @@
     <img src="{{imageDir}}", id="image-{{images[pageNum][0]|string}}", alt="image-{{images[pageNum][0]|string}}.png">
     <p>Extracted Image {{pageNum + 1}}</p>
 
-    <form method="POST" action="/saveTaggedData" enctype="multipart/form-data">
+    <form method="POST" action="/tag" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         {{ render_field(form.imageType, class_="form-select") }}
         {{ render_field(form.subject, classaddon="question") }}
