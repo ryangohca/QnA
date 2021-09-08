@@ -90,7 +90,7 @@ def tag():
         documentID = session['tag']['documentID']
         images = session['tag']['croppedImages']
         pageNum = session['tag']['pageNum']
-        currImageID = images[pageNum - 1][0]
+        currImageID = images[pageNum][0]
         tagform = TagForm(request.form, currImageID=currImageID)
         allTitles = getAllPaperTitles(current_user.id)
         for choices in allTitles.values():
@@ -163,7 +163,7 @@ def tag():
     session['tag']['documentID'] = documentID
     session['tag']['croppedImages'] = images
     pageNum = session['tag']['pageNum']
-    currImageID = images[pageNum - 1][0]
+    currImageID = images[pageNum][0]
     tagform = TagForm(currImageID=currImageID)
     allPaperTitles = getAllPaperTitles(current_user.id)
     return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
