@@ -99,9 +99,9 @@ def tag():
             if tagform.imageType.data == "question":
                 currQnRow = Questions.query.get(currImageID)
                 if currQnRow is None:
-                    question = Questions(id=currImageID, subject=tagform.subject.data, topic=tagform.topic.data, year=tagform.year.data,
+                    currQnRow = Questions(id=currImageID, subject=tagform.subject.data, topic=tagform.topic.data, year=tagform.year.data,
                                         paper=tagform.paper.data, questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data)
-                    db.session.add(question)
+                    db.session.add(currQnRow)
                     db.session.commit()
                 else:
                     currQnRow.subject=tagform.subject.data
@@ -111,6 +111,16 @@ def tag():
                     currQnRow.questionNo=tagform.questionNo.data
                     currQnRow.questionPart=tagform.questionPart.data
                     db.session.commit()
+                if tagform.paper.data is not None and tagform.questionNo.data is not None:
+                    possibleAnsMatches = Answers.query.filter_by(qnYear=currQnRow.year, qnPaper=currQnRow.paper, questionNo=currQnRow.questionNo, questionPart=currQnRow.questionPart).all()
+                    for match in possibleAnsMatches:
+                        pageID = ExtractedImages.query.get(match.id).pageID
+                        documentID = Pages.query.get(pageID).documentID
+                        userID = DocumentUploads.query.get(documentID).userID
+                        if userID == current_user.id:
+                            match.questionID = currQnRow.id
+                            db.session.commit()
+                            break
             elif tagform.imageType.data == "answer":
                 currAnsRow = Answers.query.get(currImageID)
                 if currAnsRow is None:
