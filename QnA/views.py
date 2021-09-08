@@ -129,6 +129,8 @@ def tag():
                         qnYear = None
                     else:
                         qnYear = int(qnYear)
+                    currAnsRow.qnYear = qnYear
+                    currAnsRow.qnPaper = qnPaper
                     possibleQnMatches = Questions.query.filter_by(year=qnYear, paper=qnPaper, questionNo=tagform.questionNo.data, questionPart=tagform.questionPart.data).all()
                     for match in possibleQnMatches:
                         pageID = ExtractedImages.query.get(match.id).pageID

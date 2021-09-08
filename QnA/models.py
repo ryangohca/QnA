@@ -66,9 +66,11 @@ class Answers(db.Model):
     id = db.Column(db.Integer, db.ForeignKey('extractedImages.id'), primary_key=True, autoincrement=False)
     answerText = db.Column(db.String(256), nullable=True)
     questionDocumentID = db.Column(db.Integer, db.ForeignKey('documentUploads.id'), nullable=True)
+    qnYear = db.Column(db.Integer, nullable=True)
+    qnPaper = db.Column(db.String(256), nullable=True)
     questionNo = db.Column(db.Integer, nullable=True)
     questionPart = db.Column(db.String(5), nullable=True)
-    # Previous 3 are to store info of a possible Question in the future 
+    # Previous 5 are to store info of a possible Question in the future 
     # Used when data given is incomplete / we are unable to find a match in Questions table
     # NOTE: Prefer `questionID` if it is defined.
     questionID = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=True)
