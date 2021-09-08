@@ -119,11 +119,12 @@ class TagForm(FlaskForm):
                 year = None
             else:
                 year = int(year)
-            for question in Questions.query.filter_by(year=year, paper=form.paper.data, questionNo=form.questionNo.data, questionPart=form.questionPart.data).all():
+            for question in Questions.query.filter_by(year=year, paper=paper, questionNo=form.questionNo.data, questionPart=form.questionPart.data).all():
                 pageID = ExtractedImages.query.get(question.id).pageID
                 documentID = Pages.query.get(pageID).documentID
                 userID = DocumentUploads.query.get(documentID).userID
                 if userID == current_user.id:
+                    print(question.answer)
                     if question.answer is not None:
                         raise ValidationError('This question already has a corresponding answer. Did you mistype something?')
         # If questionType is question, we just need to check whether the following condition is True:
