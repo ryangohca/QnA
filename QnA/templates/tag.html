@@ -9,7 +9,7 @@
 <script>
 var allTitles = {};
 {% for documentID in allPaperTitles %}
-    allTitles[{{ documentID }}] = {{ allPaperTitles[documentID] }};
+    allTitles[{{ documentID }}] = {{ allPaperTitles[documentID]|safe }};
 {% endfor %}
 </script>
 {% endblock %}

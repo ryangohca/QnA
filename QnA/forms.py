@@ -6,7 +6,7 @@ from wtforms import StringField, PasswordField, BooleanField, HiddenField, Selec
 from wtforms.validators import ValidationError, InputRequired, EqualTo, Length, NumberRange, Optional
 from flask_login import current_user
 
-from QnA.models import Users, DocumentUploads, Answers, Questions
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Answers, Questions
 
 def userExists(form, field):
     username = field.data.strip()
@@ -89,15 +89,18 @@ class TagForm(FlaskForm):
     questionNo = IntegerField('Question Number:', id="tag-qnNo", validators=[Optional(), NumberRange(min=1, message='Question Number must be positive!')])
     questionPart = StringField('Part:', id="tag-qnPart")
     questionDocument = SelectField('Question From:', id="tag-questionDoc", coerce=int, choices=[], default="")
-    paperSelect = SelectField('Choose paper:', id="tag-qnPaper") #This field will be populated with Javascript
+    #paperSelect = SelectField('Choose paper:', id="tag-qnPaper") #This field will be populated with Javascript
     answer = StringField('Answer (leave blank if not in text):', id="tag-qnAns")
     
     def __init__(self, *args, **kwargs):
-        if 'documentID' not in kwargs:
-            raise TypeError('TagForm() missing 1 required keyword-only argument: `documentID`.')
+        if 'currImageID' not in kwargs:
+            raise TypeError('TagForm() missing 1 required keyword-only argument: `currImageID`.')
         super().__init__(*args, **kwargs)
         self.questionDocument.choices = getAllUploadDocuments(current_user.id)
-        self.questionDocument.default = kwargs['documentID']
+        pageID = ExtractedImages.query.get(kwargs['currImageID']).pageID
+        documentID = Pages.query.get(pageID).documentID
+        self.questionDocument.default = documentID
+        self.currImageID = kwargs['currImageID']
 
     def validate_questionPart(form, field):
         # Firstly, reject any forms with a question part but no question number.
@@ -112,7 +115,7 @@ class TagForm(FlaskForm):
             # We would need to implement dropdown list for papers before we can do this.
             return True
         # If questionType is question, we just need to check whether the following condition is True:
-        #   There should be no 2 questions with the same (year, paper, questionNo, questionPart).
+        #   There should be no 2 questions with the same (year, paper, questionNo, questionPart) for the same user.
         # Similarly, if data is not available for checking, we just throw data into database if possible.
         # The only exception is when year is not specified but paper and questionNo is satisfied. We would prompt
         # user to enter a valid year if there are potential clashes.
@@ -120,6 +123,10 @@ class TagForm(FlaskForm):
             if form.paper.data is None or form.questionNo.data is None:
                 return True
             year = form.year.data
-            if len(Questions.query.filter_by(year=year, paper=form.paper.data.strip(), questionNo=form.questionNo.data, questionPart=form.questionPart.data.strip()).all()) != 0:
-                raise ValidationError("This question already exists in server. Did you mistype `questionNo`?")
+            for question in Questions.query.filter_by(year=year, paper=form.paper.data.strip(), questionNo=form.questionNo.data, questionPart=form.questionPart.data.strip()).all():
+                pageID = ExtractedImages.query.get(question.id).pageID
+                documentID = Pages.query.get(pageID).documentID
+                userID = DocumentUploads.query.get(documentID).userID
+                if userID == current_user.id and form.currImageID != question.id: # Belongs to this user AND not trying to update the form.
+                    raise ValidationError("This question already exists in server. Did you mistype `questionNo`?")
             return True
