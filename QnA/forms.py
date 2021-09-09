@@ -8,6 +8,7 @@ from flask_login import current_user
 
 from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Answers, Questions
 
+
 def userExists(form, field):
     username = field.data.strip()
     return len(Users.query.filter_by(username=username).all()) != 0
@@ -82,7 +83,7 @@ class SignupForm(FlaskForm):
             
 class TagForm(FlaskForm):
     imageType = SelectField('Type*:', id="tag-imageType", choices=[('question', 'Question Statement'), ('answer', 'Answer')], default='question', validators=[InputRequired()])
-    subject = StringField('Subject:', id="tag-title")
+    subject = StringField('Subject:', id="tag-subject")
     topic = StringField('Topic:', id="tag-topic")
     year = IntegerField('Year:', id='tag-year', validators=[Optional(), NumberRange(min=1950, max=datetime.datetime.now().year, message='Invalid year: please enter a year between %(min)s and %(max)s.')])
     paper = StringField('Paper Title (please be as specific as possible):', id='tag-paper')
@@ -101,7 +102,7 @@ class TagForm(FlaskForm):
         documentID = Pages.query.get(pageID).documentID
         self.questionDocument.default = documentID
         self.currImageID = kwargs['currImageID']
-
+        
     def validate_questionPart(form, field):
         # Firstly, reject any forms with a question part but no question number.
         if field.data is None and form.questionNo.data is not None:

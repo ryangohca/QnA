@@ -11,9 +11,10 @@ from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
 from werkzeug.routing import BuildError
+from werkzeug.datastructures import MultiDict
 
 from QnA import app, db, sess, login
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles
 from QnA.forms import LoginForm, SignupForm, TagForm
 
 logging.basicConfig(level=logging.DEBUG)
@@ -59,21 +60,40 @@ def loginUser(username, remember_me):
         return redirect(url_for(next_page, _scheme="https", _external=True))
     except BuildError: #User tries to manually key in next, but no defined route here
         return redirect(url_for('home', _scheme="https", _external=True))
-      
-def getAllPaperTitles(currentUserID):
-    allTitles = {}
-    for question in Questions.query.all():
-        pageID = ExtractedImages.query.get(question.id).pageID
-        documentID = Pages.query.get(pageID).documentID
-        userID = DocumentUploads.query.get(documentID).userID
-        if userID == currentUserID:
-            if documentID not in allTitles:
-                allTitles[documentID] = set()
-            allTitles[documentID].add((question.year, question.paper))
-    for documentID in allTitles:
-        allTitles[documentID] = list(allTitles[documentID])
-    # Abuse json to convert tuples to lists (since Javascript don't support tuples)
-    return json.loads(json.dumps(allTitles))
+
+def getTaggingData(imageID):
+    question = Questions.query.get(imageID)
+    if question is not None:
+        data = {}
+        data['imageType'] = 'question'
+        data['subject'] = question.subject
+        data['topic'] = question.topic
+        data['year'] = question.year
+        data['paper'] = question.paper
+        data['questionNo'] = question.questionNo
+        data['questionPart'] = question.questionPart
+        return MultiDict(data)
+    answer = Answers.query.get(imageID)
+    if answer is not None:
+        data = {}
+        data['imageType'] = 'answer'
+        data['answer'] = answer.answerText
+        data['questionDocument'] = answer.questionDocumentID
+        if answer.questionID is not None:
+            question = Questions.query.get(answer.questionID)
+            data['paperSelect'] = str(question.year) + '^%$' + question.paper
+            data['questionNo'] = question.questionNo
+            data['questionPart'] = question.questionPart
+        else:
+            if answer.paper is not None:
+                if answer.year is None:
+                    data['paperSelect'] = "noyear^%$" + answer.paper
+                else:
+                    data['paperSelect'] = str(answer.year) + '^%$' + answer.paper
+                data['questionNo'] = question.questionNo
+                data['questionPart'] = question.questionPart
+        return MultiDict(data)
+    return None
 
 @login.unauthorized_handler
 def unauthorised():
@@ -92,9 +112,6 @@ def tag():
         pageNum = session['tag']['pageNum']
         currImageID = images[pageNum][0]
         tagform = TagForm(request.form, currImageID=currImageID)
-        allTitles = getAllPaperTitles(current_user.id)
-        for choices in allTitles.values():
-            tagform.paperSelect.choices.extend([(str(year) + '^%$' + paper, 'dummy') for year, paper in choices])
         if tagform.validate_on_submit():
             if tagform.imageType.data == "question":
                 currQnRow = Questions.query.get(currImageID)
@@ -164,7 +181,8 @@ def tag():
     session['tag']['croppedImages'] = images
     pageNum = session['tag']['pageNum']
     currImageID = images[pageNum][0]
-    tagform = TagForm(currImageID=currImageID)
+    prefill = getTaggingData(currImageID)
+    tagform = TagForm(formdata=prefill, currImageID=currImageID)
     allPaperTitles = getAllPaperTitles(current_user.id)
     return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
 

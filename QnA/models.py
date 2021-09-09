@@ -1,8 +1,25 @@
+import json
+
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from QnA import db, login
 from QnA.clean import clean_directories
+
+def getAllPaperTitles(currentUserID):
+    allTitles = {}
+    for question in Questions.query.all():
+        pageID = ExtractedImages.query.get(question.id).pageID
+        documentID = Pages.query.get(pageID).documentID
+        userID = DocumentUploads.query.get(documentID).userID
+        if userID == currentUserID:
+            if documentID not in allTitles:
+                allTitles[documentID] = set()
+            allTitles[documentID].add((question.year, question.paper))
+    for documentID in allTitles:
+        allTitles[documentID] = list(allTitles[documentID])
+    # Abuse json to convert tuples to lists (since Javascript don't support tuples)
+    return json.loads(json.dumps(allTitles))
 
 class DocumentUploads(db.Model):
     __tablename__ = 'documentUploads'
