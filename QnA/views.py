@@ -85,9 +85,9 @@ def getTaggingData(imageID):
             data['questionNo'] = question.questionNo
             data['questionPart'] = question.questionPart
         else:
-            if answer.paper is not None:
-                if answer.year is None:
-                    data['paperSelect'] = "noyear^%$" + answer.paper
+            if answer.qnPaper is not None:
+                if answer.qnYear is None:
+                    data['paperSelect'] = "noyear^%$" + answer.qnPaper
                 else:
                     data['paperSelect'] = str(answer.year) + '^%$' + answer.paper
                 data['questionNo'] = question.questionNo
@@ -112,6 +112,7 @@ def tag():
         pageNum = session['tag']['pageNum']
         currImageID = images[pageNum][0]
         tagform = TagForm(request.form, currImageID=currImageID)
+        print(tagform.paperSelect.choices);
         if tagform.validate_on_submit():
             if tagform.imageType.data == "question":
                 currQnRow = Questions.query.get(currImageID)
@@ -152,6 +153,7 @@ def tag():
                 qnID = None
                 if tagform.paperSelect.data != "none" and tagform.questionNo.data is not None:
                     qnYear, qnPaper = tagform.paperSelect.data.split('^%$')
+                    print(qnYear, qnPaper)
                     if qnYear == "noyear":
                         qnYear = None
                     else:
@@ -184,6 +186,11 @@ def tag():
     prefill = getTaggingData(currImageID)
     tagform = TagForm(formdata=prefill, currImageID=currImageID)
     allPaperTitles = getAllPaperTitles(current_user.id)
+    
+    # new_options = [('none', 'Select a paper...')]
+    # for id in range(len(allPaperTitles[str(documentID)])):
+    # print(new_options)
+    
     return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
 
 @app.route("/edit", methods=["POST", "GET"])

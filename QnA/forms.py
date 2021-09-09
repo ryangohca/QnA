@@ -90,7 +90,8 @@ class TagForm(FlaskForm):
     questionNo = IntegerField('Question Number:', id="tag-qnNo", validators=[Optional(), NumberRange(min=1, message='Question Number must be positive!')])
     questionPart = StringField('Part:', id="tag-qnPart")
     questionDocument = SelectField('Question From:', id="tag-questionDoc", coerce=int, choices=[], default="")
-    paperSelect = SelectField('Choose paper:', id="tag-paperSelect", choices=[('none', 'Select a paper...')], default="none") #This field will be populated with Javascript
+    paperSelect = SelectField('Choose paper:', id="tag-paperSelect", coerce=str, choices=[('none', 'Select a paper...')], default="none", validate_choice=False) #This field will be populated with Javascript
+    # Temporary fix for 'Not valid choice' when submitting paper
     answer = StringField('Answer (leave blank if not in text):', id="tag-qnAns")
     
     def __init__(self, *args, **kwargs):
