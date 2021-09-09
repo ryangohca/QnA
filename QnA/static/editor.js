@@ -139,10 +139,13 @@ function setBaseImage(src, canvas) {
 }
 
 function switch_mode(evt) {
+    var display = document.getElementById("edit_mode_display");
     if (evt.key == 'd') {
         editMode = 0;
+        display.innerHTML = "Deletion";
     } else if (evt.key == 'i') {
         editMode = 1;
+        display.innerHTML = "Insertion";
     }
 }
 

@@ -44,21 +44,23 @@ window.onload = function(){
 
 {% block content %}
 
-{% set pages = document[1] %}
-{% set documentName = document[0] %}
-{% for j in range(pages | length) %}
-    {% set canvasID = "page-" + pages[j][0]|string %}
-    {% set baseImageDir = "pages/" + pages[j][2] %}
-    {% set curPage = pages[j][1] %}
-    {% if curPage == pageNum %}
-        <canvas id="{{canvasID}}" class="drawRectCanvas" width="10" height="10"></canvas>
-        <p>Page {{pages[j][1]}} of {{documentName}}</p>
-    {% endif %}
-{% endfor %}
-
-<button id="nextPage" type="button"> Next Page </button>
-<button id="prevPage" type="button"> Previous Page </button>
-<button id="submitAnnotations" type="button"> Submit! </button>
-<div id='debug'> </div>
+<div class="container">
+    <p id="edit_mode_display">Insertion</p>
+    {% set pages = document[1] %}
+    {% set documentName = document[0] %}
+    {% for j in range(pages | length) %}
+        {% set canvasID = "page-" + pages[j][0]|string %}
+        {% set baseImageDir = "pages/" + pages[j][2] %}
+        {% set curPage = pages[j][1] %}
+        {% if curPage == pageNum %}
+            <canvas id="{{canvasID}}" class="drawRectCanvas" width="10" height="10"></canvas>
+            <p>Page {{pages[j][1]}} of {{documentName}}</p>
+        {% endif %}
+    {% endfor %}
+    <button id="nextPage" type="button"> Next Page </button>
+    <button id="prevPage" type="button"> Previous Page </button>
+    <button id="submitAnnotations" type="button"> Submit! </button>
+    <div id='debug'> </div>
+</div>
 {% endblock %}
 
