@@ -3,11 +3,37 @@
 
 {% block title %} Worksheet Editor {% endblock %}
 
+{% block otherScripts %}
+<script src="{{ url_for('static', filename='wkeditor.js') }}"></script>
+
+<script>
+window.onload = function() {
+    var all_papers = {{ all_papers|tojson }}
+    var all_questions = {{ all_questions|tojson }}
+    var doc_select = document.getElementById('select-document');
+    var paper_select = document.getElementById('select-paper');
+    
+    update_paper_select(all_papers);
+    update_question_select(all_questions);
+  
+    doc_select.onchange = function(){
+        update_paper_select(all_papers);  
+        update_question_select(all_questions);
+    };
+  
+    paper_select.onchange = function() {
+        update_question_select(all_questions)
+    }
+}
+</script>
+
+{% endblock %}
+
 
 {% block content %}
 
 <div class="form-group">
-    <form action="/add_question" method="POST" class="container">
+    <form action="/worksheet_editor" method="POST" id="question_select">
         {{ form.hidden_tag() }}  
         {{ render_field(form.document, class_="form-select border") }}  
         {{ render_field(form.paper, class_="form-select border") }}  
