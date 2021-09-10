@@ -112,7 +112,6 @@ def tag():
         pageNum = session['tag']['pageNum']
         currImageID = images[pageNum][0]
         tagform = TagForm(request.form, currImageID=currImageID)
-        print(tagform.paperSelect.choices);
         if tagform.validate_on_submit():
             if tagform.imageType.data == "question":
                 currQnRow = Questions.query.get(currImageID)
@@ -186,11 +185,6 @@ def tag():
     prefill = getTaggingData(currImageID)
     tagform = TagForm(formdata=prefill, currImageID=currImageID)
     allPaperTitles = getAllPaperTitles(current_user.id)
-    
-    # new_options = [('none', 'Select a paper...')]
-    # for id in range(len(allPaperTitles[str(documentID)])):
-    # print(new_options)
-    
     return render_template("tag.html", images=images, documentID=documentID, allPaperTitles=allPaperTitles, pageNum=pageNum, form=tagform)
 
 @app.route("/edit", methods=["POST", "GET"])
