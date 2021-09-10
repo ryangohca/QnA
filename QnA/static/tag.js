@@ -22,6 +22,7 @@ function setUpImageTypeSelect(){
 
 function setUpPaperSelect(allTitles){
     let paperSelect = document.getElementById('tag-paperSelect');
+    let originalValue = paperSelect.value;
     let newChildren = [];
     let nullOption = document.createElement('option');
     nullOption.value = "none";
@@ -41,6 +42,9 @@ function setUpPaperSelect(allTitles){
         }
         let titleOption = document.createElement('option');
         titleOption.value = selectValue;
+        if (selectValue === originalValue){
+            titleOption.defaultSelected = true;
+        }
         titleOption.innerHTML = label;
         newChildren.push(titleOption);
     }
