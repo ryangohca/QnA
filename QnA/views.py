@@ -213,6 +213,12 @@ def editor():
                 if (annotation.topX, annotation.topY, annotation.bottomX, annotation.bottomY) not in submittedAnnotations:
                     fileDir = annotation.databaseName
                     os.remove(os.path.join(scriptDir, app.config['EXTRACTED'], fileDir))
+                    qn = Questions.query.get(annotation.id)
+                    if qn is not None:
+                        db.session.delete(qn)
+                    ans = Answers.query.get(annotation.id)
+                    if ans is not None:
+                        db.session.delete(ans)
                     db.session.delete(annotation)
                 else:
                     databaseAnnotations[(annotation.topX, annotation.topY, annotation.bottomX, annotation.bottomY)] = (annotation.id, annotation.databaseName)
