@@ -13,13 +13,13 @@
         {% if "classaddon" in kwargs %}
             {# Use "classaddon" only if you want to extend the default class.
                Do not use "classaddon" with "class_" #}
-            {% set class_ = class_ ~ ' ' + kwargs.pop('classaddon') %}
+            {% set class_ = class_ ~ ' ' ~ kwargs.pop('classaddon') %}
         {% endif %}
       
         {{ field(class_=class_, **kwargs)|safe }}
       
         {% if field.errors %}
-        <ul class=errors>
+        <ul class="errors">
             {% for error in field.errors %}
             <li>{{ error }}</li>
             {% endfor %}

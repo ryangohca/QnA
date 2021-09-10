@@ -14,8 +14,8 @@ from werkzeug.routing import BuildError
 from werkzeug.datastructures import MultiDict
 
 from QnA import app, db, sess, login
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles
-from QnA.forms import LoginForm, SignupForm, TagForm
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions
+from QnA.forms import LoginForm, SignupForm, TagForm, WorksheetForm, AddQuestionForm, getAllUploadDocuments
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -373,12 +373,38 @@ def redirectEdit():
 @app.route("/library", methods=["GET", "POST"])
 @login_required
 def library():
-    return render_template("library.html")
+    worksheets = Worksheets.query.filter_by(owner=current_user.id).all()
+    return render_template("library.html", worksheets=worksheets)
   
 @app.route("/create", methods=["GET", "POST"])
 @login_required
 def create():
-    return render_template("create.html")
+    wkform = WorksheetForm()
+    if (request.method == "POST"):
+        if (wkform.validate_on_submit()):
+            owner = current_user.id
+            title = wkform.title.data
+            year = wkform.year.data
+            format = wkform.format.data
+            subject = wkform.format.data
+            worksheet = Worksheets(owner=owner, title=title, year=year, subject=subject, format=format)
+            
+            db.session.add(worksheet)
+            db.session.commit()
+            
+            return redirect(url_for("worksheet_editor", _scheme="https", _external=True))
+  
+    return render_template("create.html", form=wkform)
+
+@app.route("/worksheet_editor", methods=["GET", "POST"])
+@login_required
+def worksheet_editor():
+    atqform = AddQuestionForm()
+    if (request.method == "POST"):
+        if (atqform.validate_on_submit()):
+            ...
+    
+    return render_template("wkeditor.html", form=atqform, prev_image=None)
       
 @app.route("/logout")
 def logout():

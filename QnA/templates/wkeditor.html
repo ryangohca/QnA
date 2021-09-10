@@ -1,0 +1,19 @@
+{% extends "template.html" %}
+{% from "_macros.html" import render_field with context %}
+
+{% block title %} Worksheet Editor {% endblock %}
+
+
+{% block content %}
+
+<div class="form-group">
+    <form action="/add_question" method="POST" class="container">
+        {{ form.hidden_tag() }}  
+        {{ render_field(form.document, class_="form-select border") }}  
+        {{ render_field(form.paper, class_="form-select border") }}  
+        {{ render_field(form.question, class_="form-select border") }}  
+        <button type="submit" class="btn btn-primary">Add</button>
+    </form>
+</div>
+
+{% endblock %}

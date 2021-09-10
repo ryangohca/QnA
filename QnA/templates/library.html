@@ -7,7 +7,9 @@
 
 {% block content %}
 <h2 class="ms-2 mt-2"> Library </h2>
-<button type="button" class="btn btn-primary ms-2 mb-4" id="create_btn">New Worksheet</button>
+<form action="/create" method="GET">
+    <button type="submit" class="btn btn-primary ms-2 mb-4" id="create_btn">New Worksheet</button>
+</form>
 <div class="d-flex w-100 justify-content-center" id="wksheetsPage">
     <div>
         <div class="accordion-item">
@@ -17,9 +19,20 @@
                 </button>
             </h2>
             <div id="collapseWksheets" class="accordion-collapse collapse" aria-labelledby="headingWksheets">
-                <div class="accordion-body">
-
-                </div>
+                {% for wk in worksheets %}
+                <form action="/worksheet_editor" method="GET">
+                    <button type="submit" class="accordion-body border-bottom btn btn-default btn-outline-light w-100">
+                        <div class="preview_container">
+                        {% if prev_image != None %}
+                            <img class="img-thumbnail" src="{{ prev_image }}">
+                        {% endif %}
+                        </div>
+                        <div class="metadata_container">
+                            <h3 class="text-dark"> {{ wk.title }}</h3>
+                        </div>
+                    </button>
+                </form>  
+                {% endfor %}
             </div>
         </div>
     </div>

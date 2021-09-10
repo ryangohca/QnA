@@ -98,8 +98,16 @@ class Worksheets(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     owner = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     title = db.Column(db.String(256), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
     format = db.Column(db.String(256), nullable=False)
     subject = db.Column(db.String(256), nullable=True)
+    
+class WorksheetsQuestions(db.Model):
+    __tablename__ = 'worksheetQuestions'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    worksheetID = db.Column(db.Integer, nullable=False)
+    questionID = db.Column(db.Integer, nullable=False)
+    position = db.Column(db.Integer, nullable=False)
     
 @login.user_loader
 def load_user(user_id):
@@ -110,6 +118,14 @@ def insert_dummy_user():
     dummy.set_password('admin')
     db.session.add(dummy)
     db.session.commit()
+    
+def refreshWorksheets():
+    Worksheets.__table__.drop(db.engine)
+    Worksheets.__table__.create(db.engine)
+
+def refreshWorksheetsQuestions():
+    WorksheetsQuestions.__table__.drop(db.engine)
+    WorksheetsQuestions.__table__.create(db.engine)
     
 def refreshDb():
     db.drop_all()
