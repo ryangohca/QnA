@@ -89,7 +89,7 @@ def getTaggingData(imageID):
                 if answer.qnYear is None:
                     data['paperSelect'] = "noyear^%$" + answer.qnPaper
                 else:
-                    data['paperSelect'] = str(answer.year) + '^%$' + answer.paper
+                    data['paperSelect'] = str(answer.qnYear) + '^%$' + answer.qnPaper
                 data['questionNo'] = question.questionNo
                 data['questionPart'] = question.questionPart
         return MultiDict(data)
@@ -369,6 +369,16 @@ def redirectEdit():
                                           annotations=session['edit']['curAnnotations']))
     else:
         return redirect(url_for("manage", _scheme="https", _external=True))
+      
+@app.route("/library", methods=["GET", "POST"])
+@login_required
+def library():
+    return render_template("library.html")
+  
+@app.route("/create", methods=["GET", "POST"])
+@login_required
+def create():
+    return render_template("create.html")
       
 @app.route("/logout")
 def logout():
