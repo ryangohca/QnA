@@ -6,7 +6,7 @@ from wtforms import StringField, PasswordField, BooleanField, HiddenField, Selec
 from wtforms.validators import ValidationError, InputRequired, EqualTo, Length, NumberRange, Optional
 from flask_login import current_user
 
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Answers, Questions
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Answers, Questions, getAllPaperTitles
 
 
 def userExists(form, field):
@@ -90,8 +90,7 @@ class TagForm(FlaskForm):
     questionNo = IntegerField('Question Number:', id="tag-qnNo", validators=[Optional(), NumberRange(min=1, message='Question Number must be positive!')])
     questionPart = StringField('Part:', id="tag-qnPart")
     questionDocument = SelectField('Question From:', id="tag-questionDoc", coerce=int, choices=[], default="")
-    paperSelect = SelectField('Choose paper:', id="tag-paperSelect", coerce=str, choices=[('none', 'Select a paper...')], default="none", validate_choice=False) #This field will be populated with Javascript
-    # Temporary fix for 'Not valid choice' when submitting paper
+    paperSelect = SelectField('Choose paper:', id="tag-paperSelect", coerce=str, choices=[('none', 'Select a paper...')], default="none") #This field will be populated with Javascript
     answer = StringField('Answer (leave blank if not in text):', id="tag-qnAns")
     
     def __init__(self, *args, **kwargs):
@@ -103,6 +102,9 @@ class TagForm(FlaskForm):
         documentID = Pages.query.get(pageID).documentID
         self.questionDocument.default = documentID
         self.currImageID = kwargs['currImageID']
+        allPaperTitles = getAllPaperTitles(current_user.id)
+        for choices in allPaperTitles.values():
+            self.paperSelect.choices.extend([(str(year) + "^%$" + paper, '') for year, paper in choices])
         
     def validate_questionPart(form, field):
         # Firstly, reject any forms with a question part but no question number.
