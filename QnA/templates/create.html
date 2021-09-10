@@ -1,9 +1,19 @@
 {% extends "template.html" %}
+{% from "_macros.html" import render_field with context %}
 
 {% block title %} Create Worksheet {% endblock %}
 
 {% block content %}
 
-
+<div class="form-group">
+    <form method="POST" class="container" action="/create" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}    
+        {{ render_field(form.title) }}
+        {{ render_field(form.subject) }}
+        {{ render_field(form.year) }}
+        {{ render_field(form.format, class_="form-select border") }}
+        <button type="submit" class="btn btn-primary mt-2">Confirm</button>
+    </form>
+</div>
 
 {% endblock %}

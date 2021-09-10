@@ -57,10 +57,9 @@ window.onload = function(){
             <p>Page {{pages[j][1]}} of {{documentName}}</p>
         {% endif %}
     {% endfor %}
-    <button id="nextPage" type="button"> Next Page </button>
-    <button id="prevPage" type="button"> Previous Page </button>
-    <button id="submitAnnotations" type="button"> Submit! </button>
-    <div id='debug'> </div>
+    <button id="nextPage" type="button" class="btn btn-primary"> Next Page </button>
+    <button id="prevPage" type="button" class="btn btn-primary"> Previous Page </button>
+    <button id="submitAnnotations" type="button" class="btn btn-primary"> Submit! </button>
 </div>
 {% endblock %}
 

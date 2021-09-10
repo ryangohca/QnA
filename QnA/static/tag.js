@@ -1,5 +1,4 @@
 function showForm(selectedType) {
-    console.log(selectedType);
     for (let elem of document.getElementsByClassName('question')){
         let visibility = ((selectedType === 'question') ? "block" : "none");
         elem.style.display = visibility;

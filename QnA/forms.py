@@ -6,7 +6,7 @@ from wtforms import StringField, PasswordField, BooleanField, HiddenField, Selec
 from wtforms.validators import ValidationError, InputRequired, EqualTo, Length, NumberRange, Optional
 from flask_login import current_user
 
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Answers, Questions, getAllPaperTitles
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Answers, Questions, getAllPaperTitles, Worksheets
 
 
 def userExists(form, field):
@@ -146,3 +146,25 @@ class TagForm(FlaskForm):
                 if userID == current_user.id and form.currImageID != question.id: # Belongs to this user AND not trying to update the form.
                     raise ValidationError("This question already exists in server. Did you mistype `questionNo`?")
             return True
+          
+class WorksheetForm(FlaskForm):
+    title = StringField('Worksheet Title', id="create-title", validators=[InputRequired()])
+    year = IntegerField('Year of Publishing: ', id="create-year", validators=[InputRequired(), NumberRange(min=1950, max=datetime.datetime.now().year+10, message='Invalid year: please enter a year between %(min)s and %(max)s.')]) 
+    # 2022 worksheet can be made in 2021
+    subject = StringField('Worksheet Subject', id="create-subject", validators=[InputRequired()])
+    format = SelectField('Export Format: ', id="create-format", choices=[('pdf', 'PDF'), ('docx', 'Word Document')])
+    
+    def validate_title(form, field):
+        title = field.data
+        if (len(Worksheets.query.filter_by(title=title).all())):
+            raise ValidationError(f"A worksheet with title {title} already exists! Please choose another name!")
+        
+class AddQuestionForm(FlaskForm):
+    document = SelectField("Document Name", coerce=str, choices=[], validators=[InputRequired()])  
+    paper = SelectField("Paper", choices=[], validators=[InputRequired()])
+    question = SelectField("Question", choices=[], validators=[InputRequired()])
+    
+    def __init__(self):
+        super().__init__()
+        for doc in DocumentUploads.query.filter_by(userID=current_user.id):
+            self.document.choices.append((doc.id, doc.originalName))
