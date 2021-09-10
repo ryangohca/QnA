@@ -90,8 +90,8 @@ def getTaggingData(imageID):
                     data['paperSelect'] = "noyear^%$" + answer.qnPaper
                 else:
                     data['paperSelect'] = str(answer.qnYear) + '^%$' + answer.qnPaper
-                data['questionNo'] = question.questionNo
-                data['questionPart'] = question.questionPart
+                data['questionNo'] = answer.questionNo
+                data['questionPart'] = answer.questionPart
         return MultiDict(data)
     return None
 
