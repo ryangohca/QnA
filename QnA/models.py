@@ -37,6 +37,7 @@ class Users(db.Model, UserMixin):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
     documentUploads = db.relationship('DocumentUploads', backref='users', lazy=True)
+    worksheets = db.relationship('Worksheets', backref='users', lazy=True)
     
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -91,7 +92,15 @@ class Answers(db.Model):
     # Used when data given is incomplete / we are unable to find a match in Questions table
     # NOTE: Prefer `questionID` if it is defined.
     questionID = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=True)
-  
+
+class Worksheets(db.Model):
+    __tablename__ = 'worksheets'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    owner = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title = db.Column(db.String(256), nullable=False)
+    format = db.Column(db.String(256), nullable=False)
+    subject = db.Column(db.String(256), nullable=True)
+    
 @login.user_loader
 def load_user(user_id):
     return Users.query.get(int(user_id))

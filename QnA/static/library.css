@@ -1,0 +1,9 @@
+#wksheetsPage > div {
+    width: 75%;
+}
+
+@media only screen and (max-width: 500px) {
+    #wksheetsPage > div {
+        width: 100%;
+    }
+}

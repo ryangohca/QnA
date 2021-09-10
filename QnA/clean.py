@@ -15,3 +15,5 @@ def clean_directories(delete_session_only=True):
             if not filename.endswith('.txt'):
                 os.remove(f)
                 print(f)
+
+# clean_directories()
