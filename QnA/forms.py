@@ -160,9 +160,9 @@ class WorksheetForm(FlaskForm):
             raise ValidationError(f"A worksheet with title {title} already exists! Please choose another name!")
         
 class AddQuestionForm(FlaskForm):
-    document = SelectField("Document Name", coerce=str, choices=[], validators=[InputRequired()])  
-    paper = SelectField("Paper", choices=[], validators=[InputRequired()])
-    question = SelectField("Question", choices=[], validators=[InputRequired()])
+    document = SelectField("Document Name", id="select-document", coerce=str, choices=[], validators=[InputRequired()])  
+    paper = SelectField("Paper", id="select-paper", choices=[], validators=[InputRequired()])
+    question = SelectField("Question", id="select-question", choices=[], validators=[InputRequired()])
     
     def __init__(self):
         super().__init__()

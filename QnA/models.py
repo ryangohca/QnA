@@ -20,7 +20,23 @@ def getAllPaperTitles(currentUserID):
         allTitles[documentID] = list(allTitles[documentID])
     # Abuse json to convert tuples to lists (since Javascript don't support tuples)
     return json.loads(json.dumps(allTitles))
-
+  
+def get_all_questions(currentUserID):
+    all_questions = {};
+    for question in Questions.query.all():
+        pageID = ExtractedImages.query.get(question.id).pageID # directed graph
+        documentID = Pages.query.get(pageID).documentID
+        userID = DocumentUploads.query.get(documentID).userID
+        if (userID == currentUserID):
+            paper = question.paper
+            if (paper not in all_questions):
+                all_questions[paper] = set()
+            answer = Answers.query.filter_by(questionID=question.id).first()
+            all_questions[paper].add((question.id, answer.id, question.questionNo, question.questionPart))
+    for paper in all_questions:
+        all_questions[paper] = list(all_questions[paper])
+    return json.loads(json.dumps(all_questions))
+          
 class DocumentUploads(db.Model):
     __tablename__ = 'documentUploads'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

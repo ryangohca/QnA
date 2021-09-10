@@ -14,7 +14,7 @@ from werkzeug.routing import BuildError
 from werkzeug.datastructures import MultiDict
 
 from QnA import app, db, sess, login
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions, get_all_questions
 from QnA.forms import LoginForm, SignupForm, TagForm, WorksheetForm, AddQuestionForm, getAllUploadDocuments
 
 logging.basicConfig(level=logging.DEBUG)
@@ -404,7 +404,9 @@ def worksheet_editor():
         if (atqform.validate_on_submit()):
             ...
     
-    return render_template("wkeditor.html", form=atqform, prev_image=None)
+    all_papers = getAllPaperTitles(current_user.id)
+    all_questions = get_all_questions(current_user.id)
+    return render_template("wkeditor.html", form=atqform, prev_image=None, all_papers=all_papers, all_questions=all_questions)
       
 @app.route("/logout")
 def logout():
