@@ -36,7 +36,20 @@ def get_all_questions(currentUserID):
     for paper in all_questions:
         all_questions[paper] = list(all_questions[paper])
     return json.loads(json.dumps(all_questions))
-          
+
+def get_all_worksheet_questions(worksheetID):
+    # returns a list of (questionID, questionImage, answerImage)
+    allQn = []
+    for wksheetQn in WorksheetsQuestions.query.filter_by(worksheetID=worksheetID).all():
+        currQn = Questions.query.get(wksheetQn.questionID)
+        questionImage = ExtractedImages.query.get(currQn.id).databaseName
+        answerImage = None
+        if currQn.answer is not None:
+            answerImage = ExtractedImages.query.get(currQn.answer.id).databaseName
+        allQn.append((currQn.id, questionImage, answerImage))
+    allQn.sort(key=lambda qn: WorksheetsQuestions.query.filter_by(worksheetID=worksheetID, questionID=qn[0]).first().position)
+    return allQn
+   
 class DocumentUploads(db.Model):
     __tablename__ = 'documentUploads'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -94,6 +107,7 @@ class Questions(db.Model):
     questionNo = db.Column(db.Integer, nullable=True)
     questionPart = db.Column(db.String(5), nullable=True)
     answer = db.relationship('Answers', uselist=False, backref='questions')
+    wksheetQns = db.relationship('WorksheetsQuestions', backref='questions', lazy=True)
     
 class Answers(db.Model):
     __tablename__ = 'answers'
@@ -117,36 +131,38 @@ class Worksheets(db.Model):
     year = db.Column(db.Integer, nullable=False)
     format = db.Column(db.String(256), nullable=False)
     subject = db.Column(db.String(256), nullable=True)
+    wksheetQns = db.relationship('WorksheetsQuestions', backref='worksheets', lazy=True)
     
 class WorksheetsQuestions(db.Model):
     __tablename__ = 'worksheetQuestions'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    worksheetID = db.Column(db.Integer, nullable=False)
-    questionID = db.Column(db.Integer, nullable=False)
-    position = db.Column(db.Integer, nullable=False)
+    worksheetID = db.Column(db.Integer, db.ForeignKey('worksheets.id'), nullable=False)
+    questionID = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
+    position = db.Column(db.Integer, nullable=False) #Disabling unique for now
     
 @login.user_loader
 def load_user(user_id):
     return Users.query.get(int(user_id))
   
-def insert_dummy_user():
+def __insert_dummy_user():
     dummy = Users(username='admin')
     dummy.set_password('admin')
     db.session.add(dummy)
     db.session.commit()
     
-def refreshWorksheets():
-    Worksheets.__table__.drop(db.engine)
-    Worksheets.__table__.create(db.engine)
-
-def refreshWorksheetsQuestions():
-    WorksheetsQuestions.__table__.drop(db.engine)
-    WorksheetsQuestions.__table__.create(db.engine)
+def __refreshTable(table):
+    table.__table__.drop(db.engine)
+    table.__table__.create(db.engine)
     
-def refreshDb():
+def __refreshDb():
     db.drop_all()
     clean_directories(False)
     db.create_all()
     insert_dummy_user()
     
-# refreshDb()
+def __update():
+    # Do whatever thing that you want to do here
+    __refreshTable(WorksheetsQuestions)
+    pass
+  
+#__update()

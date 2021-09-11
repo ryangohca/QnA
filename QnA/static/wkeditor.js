@@ -1,16 +1,15 @@
 var document_select = document.getElementById('select-document');
 var paper_select = document.getElementById('select-paper');
-var question_select = document.getElementById('select-question')
+var question_select = document.getElementById('select-question');
 
 function update_paper_select(all_papers) {
     var docID = document_select.options[document_select.selectedIndex].value;
     var papers = all_papers[docID];
-    let option_html = ``;
+    let new_children = [];
     
     for (var paper of papers) {
         var value = "";
         var label = "";
-        paper[1] = paper[1].split(' ').join('_'); // html does not like spaces
         if (paper[0] == null) {
             value += "noyear^%$" + paper[1];
             label = paper[1] + " (year: not specified)";
@@ -18,18 +17,20 @@ function update_paper_select(all_papers) {
             value += paper[0].toString() + "^%$" + paper[1];
             label = paper[1] + ` (year: ${paper[0]})`;
         }
-        option_html += `<option value=${value}>${label}</option>`;
+        var new_option = document.createElement('option');
+        new_option.value = value;
+        new_option.innerHTML = label;
+        new_children.push(new_option);
     }
     
-    paper_select.innerHTML = option_html;
+    paper_select.replaceChildren(...new_children);
 }
 
 
 function update_question_select(all_questions) {
     var paper = paper_select.options[paper_select.selectedIndex].value.split('^%$')[1];
-    paper = paper.split('_').join(' ');
-    var questions = all_questions[paper]
-    let option_html = ``;
+    var questions = all_questions[paper];
+    let new_children = [];
     for (var question of questions) {
         /* [0] - questionID
            [1] - answerID
@@ -37,11 +38,20 @@ function update_question_select(all_questions) {
            [3] - questionPart
         */
         var value = question[0].toString();
-        if (question[3] == "") {
-            option_html += `<option value=${value}>${question[2]}</option>`;
-        } else {
-            option_html += `<option value=${value}>${question[2]} (${question[3]})</option>`;
+        var label = question[2];
+        if (question[3] !== "") {
+            label += ` (${question[3]})`;
         }
+        var new_option = document.createElement('option');
+        new_option.value = value;
+        new_option.innerHTML = label;
+        new_children.push(new_option);
     }
-    question_select.innerHTML = option_html;
+    question_select.replaceChildren(...new_children);
+}
+
+function addQuestion(){
+    var questionID = question_select.value;
+    document.getElementById("questions").value += questionID + ',';
+    document.getElementById("submitform").submit();
 }

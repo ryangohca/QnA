@@ -8,13 +8,14 @@
 
 <script>
 window.onload = function() {
-    var all_papers = {{ all_papers|tojson }}
-    var all_questions = {{ all_questions|tojson }}
+    var all_papers = {{ all_papers|tojson }};
+    var all_questions = {{ all_questions|tojson }};
     var doc_select = document.getElementById('select-document');
     var paper_select = document.getElementById('select-paper');
     
     update_paper_select(all_papers);
     update_question_select(all_questions);
+    
   
     doc_select.onchange = function(){
         update_paper_select(all_papers);  
@@ -24,6 +25,12 @@ window.onload = function() {
     paper_select.onchange = function() {
         update_question_select(all_questions)
     }
+  
+    document.getElementById('worksheetID').value = {{ wksheetId }};
+    var submitQuestions = document.getElementById('questions');
+    {% for qn in worksheet_questions %}
+        submitQuestions.value += "{{qn[0]}},";
+    {% endfor %}
 }
 </script>
 
@@ -32,14 +39,41 @@ window.onload = function() {
 
 {% block content %}
 
-<div class="form-group">
-    <form action="/worksheet_editor" method="POST" id="question_select">
+<div class="container">
+    <form id="question_select" class="form-group">
         {{ form.hidden_tag() }}  
         {{ render_field(form.document, class_="form-select border") }}  
         {{ render_field(form.paper, class_="form-select border") }}  
         {{ render_field(form.question, class_="form-select border") }}  
-        <button type="submit" class="btn btn-primary">Add</button>
+        <button type="button" class="btn btn-primary mt-2" onclick="addQuestion();">Add</button>
     </form>
+    <form action="/worksheet_editor" method="POST" id="submitform" class='form-group'>
+        {{ submitform.hidden_tag() }} 
+    </form>
+    <table class="table">
+        <thead>
+            <th scope="col">#</th>
+            <th scope="col">Question</th>
+            <th scope="col">Answer</th>
+        </thead>
+        <tbody>
+            {% for qn in worksheet_questions %}
+                <tr>
+                    <th scope="row"> {{ loop.index }} </th>
+                    <td>
+                        <img src="static/extracted/{{qn[1]}}">
+                    </td>
+                    <td>
+                        {% if qn[2] is not none %}
+                            <img src="static/extracted/{{qn[2]}}">
+                        {% else %}
+                            <p> Sorry, answer for this question does not exist...</p>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
+<div id="debug"> </div>
 {% endblock %}

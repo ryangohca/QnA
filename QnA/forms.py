@@ -6,7 +6,7 @@ from wtforms import StringField, PasswordField, BooleanField, HiddenField, Selec
 from wtforms.validators import ValidationError, InputRequired, EqualTo, Length, NumberRange, Optional
 from flask_login import current_user
 
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Answers, Questions, getAllPaperTitles, Worksheets
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Answers, Questions, getAllPaperTitles, get_all_questions, Worksheets
 
 
 def userExists(form, field):
@@ -160,11 +160,16 @@ class WorksheetForm(FlaskForm):
             raise ValidationError(f"A worksheet with title {title} already exists! Please choose another name!")
         
 class AddQuestionForm(FlaskForm):
+    # This is not the form we submit, this form fills up 'AddQuestionSubmitForm', which is then submitted
     document = SelectField("Document Name", id="select-document", coerce=str, choices=[], validators=[InputRequired()])  
     paper = SelectField("Paper", id="select-paper", choices=[], validators=[InputRequired()])
     question = SelectField("Question", id="select-question", choices=[], validators=[InputRequired()])
-    
     def __init__(self):
         super().__init__()
         for doc in DocumentUploads.query.filter_by(userID=current_user.id):
             self.document.choices.append((doc.id, doc.originalName))
+            
+class AddQuestionSubmitForm(FlaskForm):
+    worksheet = HiddenField(default='', id="worksheetID")
+    questions = HiddenField(default='', id="questions")
+    

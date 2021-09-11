@@ -14,8 +14,8 @@ from werkzeug.routing import BuildError
 from werkzeug.datastructures import MultiDict
 
 from QnA import app, db, sess, login
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions, get_all_questions
-from QnA.forms import LoginForm, SignupForm, TagForm, WorksheetForm, AddQuestionForm, getAllUploadDocuments
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions, get_all_questions, get_all_worksheet_questions
+from QnA.forms import LoginForm, SignupForm, TagForm, WorksheetForm, AddQuestionForm, AddQuestionSubmitForm, getAllUploadDocuments
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -392,21 +392,42 @@ def create():
             db.session.add(worksheet)
             db.session.commit()
             
-            return redirect(url_for("worksheet_editor", _scheme="https", _external=True))
+            return redirect(url_for("worksheet_editor", wksheetId=worksheet.id, _scheme="https", _external=True))
   
     return render_template("create.html", form=wkform)
 
 @app.route("/worksheet_editor", methods=["GET", "POST"])
 @login_required
 def worksheet_editor():
+    if request.method == "POST":
+        atqform = AddQuestionSubmitForm(request.form)
+        if atqform.validate_on_submit():
+            wksheetId = int(atqform.worksheet.data)
+            questions = atqform.questions.data[:-1].split(',')
+            for idx, qn in enumerate(questions, start=1):
+                wksheetQn = WorksheetsQuestions.query.filter_by(worksheetID=wksheetId, questionID=int(qn)).all()
+                if len(wksheetQn) != 0:
+                    wksheetQn[0].position = idx
+                    db.session.commit()
+                else:
+                    wksheetQn = WorksheetsQuestions(worksheetID=wksheetId, questionID=int(qn), position=idx)
+                    db.session.add(wksheetQn)
+                    db.session.commit()
+        else:
+            # Something went wrong, hidden fields are changed
+            # reject request, redirect to library
+            return redirect(url_for('library', _scheme="https", _external=True))
+    elif request.method == "GET":
+        if 'wksheetId' in request.args:
+            wksheetId = int(request.args['wksheetId'])
+        else:
+            return redirect(url_for('library', _scheme="https", _external=True))
     atqform = AddQuestionForm()
-    if (request.method == "POST"):
-        if (atqform.validate_on_submit()):
-            ...
-    
+    submitform = AddQuestionSubmitForm()
     all_papers = getAllPaperTitles(current_user.id)
     all_questions = get_all_questions(current_user.id)
-    return render_template("wkeditor.html", form=atqform, prev_image=None, all_papers=all_papers, all_questions=all_questions)
+    worksheet_questions = get_all_worksheet_questions(wksheetId)
+    return render_template("wkeditor.html", form=atqform, submitform=submitform, wksheetId=wksheetId, prev_image=None, all_papers=all_papers, all_questions=all_questions, worksheet_questions=worksheet_questions)
       
 @app.route("/logout")
 def logout():
