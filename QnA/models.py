@@ -49,6 +49,25 @@ def get_all_worksheet_questions(worksheetID):
         allQn.append((currQn.id, questionImage, answerImage))
     allQn.sort(key=lambda qn: WorksheetsQuestions.query.filter_by(worksheetID=worksheetID, questionID=qn[0]).first().position)
     return allQn
+  
+def get_all_questions_by_doc(currentUserID):
+    questions = {}
+    for question in Questions.query.all():
+        pageID = ExtractedImages.query.get(question.id).pageID # directed graph
+        documentID = Pages.query.get(pageID).documentID
+        userID = DocumentUploads.query.get(documentID).userID
+        if (userID == currentUserID):
+            if (documentID not in questions):
+                questions[documentID] = set()
+            answer = Answers.query.filter_by(questionID=question.id).first()
+            questions[documentID].add((question.id, answer.id, question.questionNo, question.questionPart))
+            
+    for paper in questions:
+        questions[paper] = list(questions[paper])
+        
+    return json.loads(json.dumps(questions))
+                
+          
    
 class DocumentUploads(db.Model):
     __tablename__ = 'documentUploads'
