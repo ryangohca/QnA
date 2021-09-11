@@ -7,9 +7,10 @@
 <script src="{{ url_for('static', filename='wkeditor.js') }}"></script>
 
 <script>
+var all_papers = {{ all_papers|tojson }};
+var all_questions = {{ all_questions|tojson }};
+var questions_by_doc = {{ questions_by_doc|tojson }};
 window.onload = function() {
-    var all_papers = {{ all_papers|tojson }};
-    var all_questions = {{ all_questions|tojson }};
     var doc_select = document.getElementById('select-document');
     var paper_select = document.getElementById('select-paper');
     
@@ -45,7 +46,8 @@ window.onload = function() {
         {{ render_field(form.document, class_="form-select border") }}  
         {{ render_field(form.paper, class_="form-select border") }}  
         {{ render_field(form.question, class_="form-select border") }}  
-        <button type="button" class="btn btn-primary mt-2" onclick="addQuestion();">Add</button>
+        {{ render_field(form.bulk_options, class_="form-select border") }}  
+        <button type="button" class="btn btn-primary mt-2" onclick="addQuestion(questions_by_doc, all_questions);">Add</button>
     </form>
     <form action="/worksheet_editor" method="POST" id="submitform" class='form-group'>
         {{ submitform.hidden_tag() }} 
@@ -55,6 +57,7 @@ window.onload = function() {
             <th scope="col">#</th>
             <th scope="col">Question</th>
             <th scope="col">Answer</th>
+            <th scope="col">Actions</th>
         </thead>
         <tbody>
             {% for qn in worksheet_questions %}
@@ -70,10 +73,16 @@ window.onload = function() {
                             <p> Sorry, answer for this question does not exist...</p>
                         {% endif %}
                     </td>
+                    <td>
+                      <form action="/remove_question/{{ qn[0] }}/{{ wksheetId }}" method="POST">
+                          <button type="submit" class="btn btn-primary">Remove</button>
+                      </form>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+    <button class="btn btn-primary">Download</button>
 </div>
 <div id="debug"> </div>
 {% endblock %}

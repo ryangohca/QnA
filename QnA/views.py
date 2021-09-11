@@ -14,7 +14,7 @@ from werkzeug.routing import BuildError
 from werkzeug.datastructures import MultiDict
 
 from QnA import app, db, sess, login
-from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions, get_all_questions, get_all_worksheet_questions
+from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions, get_all_questions, get_all_worksheet_questions, get_all_questions_by_doc
 from QnA.forms import LoginForm, SignupForm, TagForm, WorksheetForm, AddQuestionForm, AddQuestionSubmitForm, getAllUploadDocuments
 
 logging.basicConfig(level=logging.DEBUG)
@@ -404,6 +404,7 @@ def worksheet_editor():
         if atqform.validate_on_submit():
             wksheetId = int(atqform.worksheet.data)
             questions = atqform.questions.data[:-1].split(',')
+            print(atqform.questions.data)
             for idx, qn in enumerate(questions, start=1):
                 wksheetQn = WorksheetsQuestions.query.filter_by(worksheetID=wksheetId, questionID=int(qn)).all()
                 if len(wksheetQn) != 0:
@@ -427,7 +428,16 @@ def worksheet_editor():
     all_papers = getAllPaperTitles(current_user.id)
     all_questions = get_all_questions(current_user.id)
     worksheet_questions = get_all_worksheet_questions(wksheetId)
-    return render_template("wkeditor.html", form=atqform, submitform=submitform, wksheetId=wksheetId, prev_image=None, all_papers=all_papers, all_questions=all_questions, worksheet_questions=worksheet_questions)
+    qbd = get_all_questions_by_doc(current_user.id)
+    return render_template("wkeditor.html", form=atqform, submitform=submitform, wksheetId=wksheetId, prev_image=None, all_papers=all_papers, all_questions=all_questions, worksheet_questions=worksheet_questions, questions_by_doc=qbd)
+
+@app.route('/remove_question/<question_id>/<wk_id>', methods=["GET", "POST"])
+@login_required
+def remove_question(question_id, wk_id):
+    qn = WorksheetsQuestions.query.filter_by(questionID=question_id, worksheetID=wk_id).first()
+    db.session.delete(qn)
+    db.session.commit()  
+    return redirect(url_for('worksheet_editor', wksheetId=wk_id, _scheme="https", _external=True))
       
 @app.route("/logout")
 def logout():

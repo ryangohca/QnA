@@ -164,6 +164,7 @@ class AddQuestionForm(FlaskForm):
     document = SelectField("Document Name", id="select-document", coerce=str, choices=[], validators=[InputRequired()])  
     paper = SelectField("Paper", id="select-paper", choices=[], validators=[InputRequired()])
     question = SelectField("Question", id="select-question", choices=[], validators=[InputRequired()])
+    bulk_options = SelectField("Add all from", id="select-bulk", choices=[('individual', 'No'), ('doc', 'Document'), ('paper', 'Paper')], validators=[InputRequired()])
     def __init__(self):
         super().__init__()
         for doc in DocumentUploads.query.filter_by(userID=current_user.id):

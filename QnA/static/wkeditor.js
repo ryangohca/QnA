@@ -1,6 +1,7 @@
 var document_select = document.getElementById('select-document');
 var paper_select = document.getElementById('select-paper');
 var question_select = document.getElementById('select-question');
+var bulk_select = document.getElementById("select-bulk");
 
 function update_paper_select(all_papers) {
     var docID = document_select.options[document_select.selectedIndex].value;
@@ -50,8 +51,26 @@ function update_question_select(all_questions) {
     question_select.replaceChildren(...new_children);
 }
 
-function addQuestion(){
+function addQuestion(questions_by_doc, questions_by_paper) {
     var questionID = question_select.value;
-    document.getElementById("questions").value += questionID + ',';
+    var bulkID = bulk_select.value;
+    var suffix = "";
+
+    if (bulkID == "individual") {
+        suffix += questionID + ',';
+    } else if (bulkID == "doc") { // add all questions from selected doc
+        var docID = document_select.options[document_select.selectedIndex].value;
+        for (var qn in questions_by_doc[docID]) {
+            suffix += questions_by_doc[docID][qn][0] + ',';
+        }
+    } else if (bulkID == "paper") { // add all questions from selected paper
+        var paper = paper_select.options[paper_select.selectedIndex].value.split('^%$')[1];
+        var questions = questions_by_paper[paper];
+        for (var question of questions) {
+            var value = question[0].toString();
+            suffix += value + ',';
+        }
+    }
+    document.getElementById("questions").value += suffix;
     document.getElementById("submitform").submit();
 }
