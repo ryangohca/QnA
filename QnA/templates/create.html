@@ -5,8 +5,8 @@
 
 {% block content %}
 
-<div class="form-group">
-    <form method="POST" class="container" action="/create" enctype="multipart/form-data">
+<div class="container">
+    <form method="POST" class="form-group" action="/create" enctype="multipart/form-data">
         {{ form.hidden_tag() }}    
         {{ render_field(form.title) }}
         {{ render_field(form.subject) }}
