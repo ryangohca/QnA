@@ -5,17 +5,19 @@ import string
 import logging
 from collections import namedtuple
 
-from flask import render_template, request, flash, url_for, redirect, make_response, session, jsonify
+from flask import render_template, request, flash, url_for, redirect, make_response, session, jsonify, send_from_directory
 from flask_login import current_user, login_required, login_user, logout_user
 from PIL import Image
 import fitz #pymupdf legacy name is fitz
 from docx2pdf import convert
 from werkzeug.routing import BuildError
 from werkzeug.datastructures import MultiDict
+from fpdf import FPDF
 
 from QnA import app, db, sess, login
 from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions, get_all_questions, get_all_worksheet_questions, get_all_questions_by_doc
 from QnA.forms import LoginForm, SignupForm, TagForm, WorksheetForm, AddQuestionForm, AddQuestionSubmitForm, getAllUploadDocuments
+from QnA.pdftemplate import WorksheetPDF
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -431,6 +433,32 @@ def worksheet_editor():
     qbd = get_all_questions_by_doc(current_user.id)
     return render_template("wkeditor.html", form=atqform, submitform=submitform, wksheetId=wksheetId, prev_image=None, all_papers=all_papers, all_questions=all_questions, worksheet_questions=worksheet_questions, questions_by_doc=qbd)
 
+@app.route('/download_worksheet/<wk_id>', methods=["GET", "POST"])
+@login_required
+def download_worksheet(wk_id):
+    wk_name = Worksheets.query.filter_by(id=wk_id).first().title
+    filename = os.path.join(os.path.dirname(__file__), app.config['WORKSHEETS'], wk_name + '.pdf')
+    
+    if (not os.path.exists(filename)):
+        pdf = WorksheetPDF()
+        pdf.add_page()
+
+        qns = get_all_worksheet_questions(wk_id)
+        cur_row = 50 * 0.264583 # current question row (mm) 1px = 0.264583mm
+        for idx in range(len(qns)):
+            qnpath = os.path.join(os.path.dirname(__file__), app.config['EXTRACTED'], qns[idx][1])
+            anspath = os.path.join(os.path.dirname(__file__), app.config['EXTRACTED'], qns[idx][2])
+            qn_size = Image.open(qnpath)
+            ans_size = Image.open(anspath)
+
+            pdf.add_image(10 * 0.264583, cur_row, qnpath)
+            pdf.add_image(qn_size.width * 0.264583 + 30, cur_row, anspath)
+            cur_row += (max(qn_size.height, ans_size.height) + 50) * 0.264583
+            
+        pdf.output(filename, 'F')
+    
+    return send_from_directory(directory=app.config['WORKSHEETS'], path=wk_name + '.pdf', as_attachment=True)
+  
 @app.route('/remove_question/<question_id>/<wk_id>', methods=["GET", "POST"])
 @login_required
 def remove_question(question_id, wk_id):
