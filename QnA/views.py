@@ -180,12 +180,21 @@ def tag():
     documentID = request.args.get("documentID")
     if images is None or documentID is None:
         return redirect(url_for('manage', _scheme="https", _external=True))
-    images = json.loads(images)
-    logging.info(images)
+    try:
+        images = json.loads(images)
+    except json.JSONDecodeError as e: #JSONDecoderError inherits from ValueError
+        logging.info(e)
+        return redirect(url_for('manage', _scheme="https", _external=True))
+    
+    pageNum = session['tag']['pageNum']
+    try:
+        currImageID = images[pageNum][0]
+    except (IndexError, KeyError) as e:
+        logging.info(e)
+        return redirect(url_for('manage', _scheme="https", _external=True))
+      
     session['tag']['documentID'] = documentID
     session['tag']['croppedImages'] = images
-    pageNum = session['tag']['pageNum']
-    currImageID = images[pageNum][0]
     prefill = getTaggingData(currImageID)
     tagform = TagForm(formdata=prefill, currImageID=currImageID)
     allPaperTitles = getAllPaperTitles(current_user.id)
@@ -254,8 +263,12 @@ def editor():
     document = request.args.get('document')
     if document is None:
         return redirect(url_for('manage', _scheme="https", _external=True))
+    try:
+        document = json.loads(document)
+    except json.JSONDecodeError:
+        return redirect(url_for('manage', _scheme="https", _external=True))
     logging.info(session)
-    return render_template("editor.html", document=json.loads(document), pageNum = session['edit']['curPageNum'], 
+    return render_template("editor.html", document=document, pageNum = session['edit']['curPageNum'], 
                                            annotations = session['edit']['curAnnotations'])
 
 @app.route("/nextPage", methods=["GET", "POST"])
@@ -430,6 +443,9 @@ def worksheet_editor():
             wksheetId = int(request.args['wksheetId'])
         else:
             return redirect(url_for('library', _scheme="https", _external=True))
+        if Worksheets.query.get(wksheetId) is None:
+            return redirect(url_for('library', _scheme="https", _external=True))
+          
     atqform = AddQuestionForm()
     submitform = AddQuestionSubmitForm()
     all_papers = getAllPaperTitles(current_user.id)
