@@ -21,6 +21,8 @@ from QnA.pdftemplate import WorksheetPDF
 
 logging.basicConfig(level=logging.DEBUG)
 
+PIXEL_TO_MM = 0.264583
+
 def cropImage(rootImage, coords):
     # coords = (startX, startY, endX, endY)
     original = Image.open(rootImage)
@@ -217,6 +219,9 @@ def editor():
                     os.remove(os.path.join(scriptDir, app.config['EXTRACTED'], fileDir))
                     qn = Questions.query.get(annotation.id)
                     if qn is not None:
+                        allWorksheetQns = WorksheetsQuestions.query.filter_by(questionID=qn.id).all()
+                        for wksheetQn in allWorksheetQns:
+                            db.session.delete(wksheetQn)
                         db.session.delete(qn)
                     ans = Answers.query.get(annotation.id)
                     if ans is not None:
@@ -308,9 +313,9 @@ def uploadFiles():
             filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], newName + '.' + ext)
             file.save(filePath)
             if ext == 'doc' or ext == 'docx':
-               newPath = filePath.replace('.' + ext, ".pdf")
-               convert(filePath, newPath)
-               filePath = newPath
+                newPath = filePath.replace('.' + ext, ".pdf")
+                convert(filePath, newPath)
+                filePath = newPath
             document = DocumentUploads(userID=current_user.id, originalName=file.filename, databaseName=newName + '.pdf')
             db.session.add(document)
             db.session.commit()
@@ -376,14 +381,14 @@ def redirectEdit():
 @login_required
 def library():
     worksheets = Worksheets.query.filter_by(owner=current_user.id).all()
-    return render_template("library.html", worksheets=worksheets)
+    return render_template("library.html", worksheets=worksheets, preview_image=None)
   
 @app.route("/create", methods=["GET", "POST"])
 @login_required
 def create():
     wkform = WorksheetForm()
-    if (request.method == "POST"):
-        if (wkform.validate_on_submit()):
+    if request.method == "POST":
+        if wkform.validate_on_submit():
             owner = current_user.id
             title = wkform.title.data
             year = wkform.year.data
@@ -431,29 +436,33 @@ def worksheet_editor():
     all_questions = get_all_questions(current_user.id)
     worksheet_questions = get_all_worksheet_questions(wksheetId)
     qbd = get_all_questions_by_doc(current_user.id)
-    return render_template("wkeditor.html", form=atqform, submitform=submitform, wksheetId=wksheetId, prev_image=None, all_papers=all_papers, all_questions=all_questions, worksheet_questions=worksheet_questions, questions_by_doc=qbd)
+    return render_template("wkeditor.html", form=atqform, submitform=submitform, wksheetId=wksheetId, all_papers=all_papers, all_questions=all_questions, worksheet_questions=worksheet_questions, questions_by_doc=qbd)
 
-@app.route('/download_worksheet/<wk_id>', methods=["GET", "POST"])
+@app.route('/download_worksheet/<wk_id>', methods=["GET"])
 @login_required
 def download_worksheet(wk_id):
-    wk_name = Worksheets.query.filter_by(id=wk_id).first().title
+    currWs = Worksheets.query.filter_by(id=wk_id).first()
+    if currWs is None:
+        # User manually typed in wk_id.. more likely malicious user
+        return redirect(url_for('library', _scheme="https", _external=True))
+    wk_name = currWs.title
     filename = os.path.join(os.path.dirname(__file__), app.config['WORKSHEETS'], wk_name + '.pdf')
     
-    if (not os.path.exists(filename)):
+    if not os.path.exists(filename):
         pdf = WorksheetPDF()
         pdf.add_page()
 
         qns = get_all_worksheet_questions(wk_id)
-        cur_row = 50 * 0.264583 # current question row (mm) 1px = 0.264583mm
+        cur_row = 50 * PIXEL_TO_MM 
         for idx in range(len(qns)):
             qnpath = os.path.join(os.path.dirname(__file__), app.config['EXTRACTED'], qns[idx][1])
             anspath = os.path.join(os.path.dirname(__file__), app.config['EXTRACTED'], qns[idx][2])
             qn_size = Image.open(qnpath)
             ans_size = Image.open(anspath)
 
-            pdf.add_image(10 * 0.264583, cur_row, qnpath)
-            pdf.add_image(qn_size.width * 0.264583 + 30, cur_row, anspath)
-            cur_row += (max(qn_size.height, ans_size.height) + 50) * 0.264583
+            pdf.add_image(10 * PIXEL_TO_MM, cur_row, qnpath)
+            pdf.add_image(qn_size.width * PIXEL_TO_MM + 30, cur_row, anspath)
+            cur_row += (max(qn_size.height, ans_size.height) + 50) * PIXEL_TO_MM
             
         pdf.output(filename, 'F')
     
@@ -462,10 +471,13 @@ def download_worksheet(wk_id):
 @app.route('/remove_question/<question_id>/<wk_id>', methods=["GET", "POST"])
 @login_required
 def remove_question(question_id, wk_id):
-    qn = WorksheetsQuestions.query.filter_by(questionID=question_id, worksheetID=wk_id).first()
-    db.session.delete(qn)
-    db.session.commit()  
-    return redirect(url_for('worksheet_editor', wksheetId=wk_id, _scheme="https", _external=True))
+    if request.method == "POST":
+        qn = WorksheetsQuestions.query.filter_by(questionID=question_id, worksheetID=wk_id).first()
+        db.session.delete(qn)
+        db.session.commit()  
+        return redirect(url_for('worksheet_editor', wksheetId=wk_id, _scheme="https", _external=True))
+    else:
+        return redirect(url_for('home', _scheme="https", _external=True))
       
 @app.route("/logout")
 def logout():
