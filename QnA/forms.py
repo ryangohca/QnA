@@ -174,3 +174,28 @@ class AddQuestionSubmitForm(FlaskForm):
     worksheet = HiddenField(default='', id="worksheetID")
     questions = HiddenField(default='', id="questions")
     
+    def validate_worksheet(form, field):
+        try:
+            wksheetID = int(field.data)
+        except ValueError:
+            raise ValidationError("Internal Error: Invalid worksheetID.")
+        if Worksheets.query.get(wksheetID) is None:
+            raise ValidationError("Internal Error: Invalid worksheetID.")
+        return True
+      
+    def validate_questions(form, field):
+        if field.data == "":
+            return True
+        if field.data[-1] != ',':
+            raise ValidationError("Internal Error: questions field is tampered with.")
+        
+        questionIDs = field.data[:-1].split(',')
+        for qnID in questionIDs:
+            try:
+                qnID = int(qnID)
+            except ValueError:
+                raise ValidationError("Internal Error: One of the questionIDs is not an integer.")
+            if Questions.query.get(qnID) is None:
+                raise ValidationError("Internal Error: One of the questionIDs is not defined in database.")
+        
+    
