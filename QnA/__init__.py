@@ -12,6 +12,7 @@ app.config['SECRET_KEY'] = "chuucandoitificandoit"
 app.config['EXTRACTED'] = 'static/extracted'
 app.config['UPLOAD'] = 'static/upload'
 app.config['PAGES'] = 'static/pages'
+app.config['WORKSHEETS'] = 'static/worksheets'
 
 Bootstrap(app)
 
