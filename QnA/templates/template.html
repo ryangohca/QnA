@@ -2,7 +2,9 @@
 
 {% block head %}
     <meta http-equiv="REFRESH" content="csrf_timeout_in_seconds">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    {% if session['is_production'] == True %}
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    {% endif %}
     {{ super() }}
 {% endblock %}
 
