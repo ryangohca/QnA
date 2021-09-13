@@ -1,1 +1,1 @@
-web: gunicorn -b :$PORT --pythonpath QnA.__init__:app
+web: gunicorn -b :$PORT QnA.__init__:app
