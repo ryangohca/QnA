@@ -9,5 +9,6 @@ pyopenssl
 Pillow
 PyMuPDF
 docx2pdf
+pdf2docx
 fpdf
 
