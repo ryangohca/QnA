@@ -1,1 +1,1 @@
-web: gunicorn -b :$PORT main:app
+web: gunicorn -b :$PORT --chdir QnA __init__:app
