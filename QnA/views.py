@@ -19,6 +19,7 @@ from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions
 from QnA.forms import LoginForm, SignupForm, TagForm, WorksheetForm, AddQuestionForm, AddQuestionSubmitForm, getAllUploadDocuments
 from QnA.pdftemplate import WorksheetPDF
 
+furl_for = url_for # We are going to mock url_for to automatically redirect securely unless it's localhost
 logging.basicConfig(level=logging.DEBUG)
 
 PIXEL_TO_MM = 0.264583
@@ -99,6 +100,21 @@ def getTaggingData(imageID):
         return MultiDict(data)
     return None
 
+def is_production():
+    root_url = request.url_root
+    logging.info(root_url)
+    developer_url = 'http://192.168.0.132:8080/'
+    return root_url != developer_url
+
+def url_for(func, *args, **kwargs):
+    if '_scheme' in kwargs and kwargs['_scheme'] == "https":
+        kwargs.pop('_scheme')
+        kwargs.pop('_external')
+    if is_production():
+        return furl_for(func, *args, _scheme=True, _external=True, **kwargs)
+    else:
+        return furl_for(func, *args, **kwargs)
+    
 @login.unauthorized_handler
 def unauthorised():
     return redirect(url_for('root', next=request.endpoint, _scheme="https", _external=True))
@@ -508,6 +524,8 @@ def home():
     
 @app.route("/", methods=["GET", "POST"])
 def root():
+    session['is_production'] = is_production()
+    logging.info(session['is_production'])
     if current_user.is_authenticated:
         return redirect(url_for('home', _scheme="https", _external=True))
     if request.method == "POST":

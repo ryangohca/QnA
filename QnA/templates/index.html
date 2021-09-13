@@ -2,8 +2,11 @@
 {% from "_macros.html" import render_field with context %}
 
 {% block head %}
-{{super()}}
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="REFRESH" content="csrf_timeout_in_seconds">
+    {% if session['is_production'] == True %}
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    {% endif %}
+    {{ super() }}
 {% endblock %}
 
 {% block styles %}
@@ -28,11 +31,11 @@
             <p> Write Text here...</p>
         </div>
     </div>
-    <div id="loginformdiv" class="form-group"> 
+    <div id="loginformdiv" class="form-group">
         <h3 class="text-center mt-2"> Sign In </h3>
         <form method="POST" id="loginForm" class="container">
             {{ loginForm.hidden_tag() }}
-          
+
             {{ render_field(loginForm.username, autocomplete="username") }}
             {{ render_field(loginForm.password, autocomplete="current-password") }}
             {{ render_field(loginForm.remember_me, class_="form-check-input border") }}
@@ -44,7 +47,7 @@
         <h3 class="text-center"> Register </h3>
         <form method="POST" id="signupForm" class="container">
             {{ signupForm.hidden_tag() }}
-          
+
             {{ render_field(signupForm.username, autocomplete="username") }}
             {{ render_field(signupForm.password, autocomplete="new-password") }}
             {{ render_field(signupForm.confirm, autocomplete="new-password") }}
