@@ -337,7 +337,9 @@ def uploadFiles():
     if request.method == "POST":
         files = request.files.getlist('filepicker')
         for file in files:
-            originalName, ext = file.filename.split('.')
+            splitted = file.filename.split('.')
+            ext = splitted[-1]
+            originalName = '.'.join(splitted[:-1])
             newName = generateRandomName()
             filePath = os.path.join(os.path.dirname(__file__), app.config['UPLOAD'], newName + '.' + ext)
             file.save(filePath)
