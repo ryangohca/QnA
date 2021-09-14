@@ -13,6 +13,7 @@ from docx2pdf import convert
 from werkzeug.routing import BuildError
 from werkzeug.datastructures import MultiDict
 from fpdf import FPDF
+from pdf2docx import Converter
 
 from QnA import app, db, sess, login
 from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions, get_all_questions, get_all_worksheet_questions, get_all_questions_by_doc
@@ -500,7 +501,13 @@ def download_worksheet(wk_id):
             
         pdf.output(filename, 'F')
     
-    return send_from_directory(directory=app.config['WORKSHEETS'], path=wk_name + '.pdf', as_attachment=True)
+    if currWs.format == "pdf":
+        return send_from_directory(directory=app.config['WORKSHEETS'], path=wk_name + '.pdf', as_attachment=True)
+    else:
+        cv = Converter(filename)
+        cv.convert(filename.replace(wk_name + '.docx'))
+        cv.close()
+        return send_from_directory(directory=app.config['WORKSHEETS'], path=wk_name + '.docx', as_attachment=True)
   
 @app.route('/remove_question/<question_id>/<wk_id>', methods=["GET", "POST"])
 @login_required
