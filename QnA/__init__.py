@@ -2,7 +2,6 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
-from flask_sslify import SSLify
 from flask_login import LoginManager
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -47,7 +46,6 @@ Session object stores:
 '''
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
-#sslify = SSLify(app)
 
 login = LoginManager(app)
 login.login_view = "/"
