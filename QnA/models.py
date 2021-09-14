@@ -32,7 +32,8 @@ def get_all_questions(currentUserID):
             if (paper not in all_questions):
                 all_questions[paper] = set()
             answer = Answers.query.filter_by(questionID=question.id).first()
-            all_questions[paper].add((question.id, answer.id, question.questionNo, question.questionPart))
+            if (answer is not None):
+                all_questions[paper].add((question.id, answer.id, question.questionNo, question.questionPart))
     for paper in all_questions:
         all_questions[paper] = list(all_questions[paper])
     return json.loads(json.dumps(all_questions))
@@ -60,7 +61,8 @@ def get_all_questions_by_doc(currentUserID):
             if (documentID not in questions):
                 questions[documentID] = set()
             answer = Answers.query.filter_by(questionID=question.id).first()
-            questions[documentID].add((question.id, answer.id, question.questionNo, question.questionPart))
+            if (answer is not None):
+                questions[documentID].add((question.id, answer.id, question.questionNo, question.questionPart))
             
     for paper in questions:
         questions[paper] = list(questions[paper])
