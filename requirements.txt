@@ -4,8 +4,6 @@ Flask-Bootstrap
 Flask-Session
 Flask-WTF
 Flask-Login
-Flask-SSLify
-pyopenssl
 Pillow
 PyMuPDF
 docx2pdf
