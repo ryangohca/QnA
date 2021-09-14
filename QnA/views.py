@@ -103,7 +103,7 @@ def getTaggingData(imageID):
 def is_production():
     root_url = request.url_root
     logging.info(root_url)
-    developer_url = 'http://192.168.0.132:8080/'
+    developer_url = 'http://192.168.0.132:5000/'
     return root_url != developer_url
 
 def url_for(func, *args, **kwargs):
