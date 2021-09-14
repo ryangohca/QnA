@@ -1,1 +1,1 @@
-web: gunicorn main:app
+web: gunicorn -b :$PORT QnA.__init__:app
