@@ -139,13 +139,14 @@ function setBaseImage(src, canvas) {
 }
 
 function switch_mode(evt) {
-    var display = document.getElementById("edit_mode_display");
     if (evt.key == 'd') {
+        document.getElementById("insert").disabled = false;
+        document.getElementById("delete").disabled = true;
         editMode = 0;
-        display.innerHTML = "Deletion";
     } else if (evt.key == 'i') {
+        document.getElementById("insert").disabled = true;
+        document.getElementById("delete").disabled = false;
         editMode = 1;
-        display.innerHTML = "Insertion";
     }
 }
 
