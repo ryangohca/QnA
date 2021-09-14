@@ -509,7 +509,7 @@ def download_worksheet(wk_id):
         return send_from_directory(directory=app.config['WORKSHEETS'], path=wk_name + '.pdf', as_attachment=True)
     else:
         cv = Converter(filename)
-        cv.convert(filename.replace(wk_name + '.docx'))
+        cv.convert(filename.replace('.pdf', '.docx'))
         cv.close()
         return send_from_directory(directory=app.config['WORKSHEETS'], path=wk_name + '.docx', as_attachment=True)
   
