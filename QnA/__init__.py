@@ -8,7 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = "chuucandoitificandoit"
+app.config['SECRET_KEY'] = "ChuuCanDoItIfICanDoIt"
 app.config['EXTRACTED'] = 'static/extracted'
 app.config['UPLOAD'] = 'static/upload'
 app.config['PAGES'] = 'static/pages'
