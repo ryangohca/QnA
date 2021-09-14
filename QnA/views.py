@@ -111,7 +111,7 @@ def url_for(func, *args, **kwargs):
         kwargs.pop('_scheme')
         kwargs.pop('_external')
     if is_production():
-        return furl_for(func, *args, _scheme=True, _external=True, **kwargs)
+        return furl_for(func, *args, _scheme="https", _external=True, **kwargs)
     else:
         return furl_for(func, *args, **kwargs)
     
