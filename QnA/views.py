@@ -103,8 +103,8 @@ def getTaggingData(imageID):
 def is_production():
     root_url = request.url_root
     logging.info(root_url)
-    developer_url = 'http://192.168.0.132:5000/'
-    return root_url != developer_url
+    developer_end_url = ':5000/'
+    return not root_url.endswith(developer_end_url)
 
 def url_for(func, *args, **kwargs):
     if '_scheme' in kwargs and kwargs['_scheme'] == "https":
