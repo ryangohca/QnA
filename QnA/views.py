@@ -13,7 +13,11 @@ from docx2pdf import convert
 from werkzeug.routing import BuildError
 from werkzeug.datastructures import MultiDict
 from fpdf import FPDF
-from pdf2docx import Converter
+
+try:
+    from pdf2docx import Converter
+except ModuleNotFoundError:
+    pass # server doesn't support conversion from pdf to docx, but running locally will
 
 from QnA import app, db, sess, login
 from QnA.models import Users, DocumentUploads, Pages, ExtractedImages, Questions, Answers, getAllPaperTitles, Worksheets, WorksheetsQuestions, get_all_questions, get_all_worksheet_questions, get_all_questions_by_doc
